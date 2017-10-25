@@ -1,0 +1,8 @@
+model tmaxmin_exact.mod;
+data toy_dat.dat;
+
+option solver baron;
+
+solve;
+
+display v,s;
