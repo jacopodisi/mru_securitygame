@@ -7,21 +7,24 @@ from srg import computecovsets as cs
 from srg import graph as gr
 
 
-def compute_shortest_sets(matrix, deadlines):
+def compute_shortest_sets(graph_game, targets):
     """ Compute a list of array containing the reachable
         target from each vetrex.
 
     Parameters
     ----------
-    matrix: adjacency matrix of the graph
-    deadlines: dictionary of type {"target_1": deadline_1,
-                                    "target_2": deadline_2, ...}
+    graph_game: instance of Graph class representing the game
+    targets: list of targets for which compute the covering routes
 
     Return
     ------
     shortest_matrix: numpy matrix of (|nodes| x |nodes|), where the row
                    0 represent the shortest_set of node 0 and so on..
     """
+    matrix = graph_game.getAdjacencyMatrix()
+    if gr.inf == 999:
+        matrix[matrix == 999] = 0
+    deadlines = {t: graph_game.getVertex(t).deadline for t in targets}
     G = nx.from_numpy_matrix(matrix)
     shortest_matrix = np.zeros(shape=matrix.shape)
     for tgt, dl in deadlines.iteritems():
@@ -64,13 +67,8 @@ if __name__ == '__main__':
     print("Adjacency matrix:")
     print(graph.getAdjacencyMatrix())
 
-    adj = graph.getAdjacencyMatrix()
     tgts = graph.getTargets()
-    print(tgts)
-    deadlines = {t: graph.getVertex(t).deadline for t in tgts}
-    print("\n")
-    print(deadlines)
     # shortest matrix computation
-    shortest_matrix = compute_shortest_sets(adj, deadlines)
+    shortest_matrix = compute_shortest_sets(graph, tgts)
     print("\nShortest Matrix:\n")
     print(shortest_matrix)
