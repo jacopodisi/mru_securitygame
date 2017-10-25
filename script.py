@@ -62,10 +62,16 @@ def compute_covering_routes(graph_game, targets):
 
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
     mat = gr.generateRandMatrix(15, 0.3)
     graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
     print("Adjacency matrix:")
     print(graph.getAdjacencyMatrix())
+
+    print("\nGraph:\n")
+    G = nx.from_numpy_matrix(np.array(mat))
+    nx.draw(G, with_labels=True)
+    plt.show()
 
     tgts = graph.getTargets()
     # shortest matrix computation
