@@ -78,3 +78,6 @@ if __name__ == '__main__':
     shortest_matrix = compute_shortest_sets(graph, tgts)
     print("\nShortest Matrix:\n")
     print(shortest_matrix)
+    csr = compute_covering_routes(graph, tgts)
+    print("\n")
+    print(csr[0].toarray())
