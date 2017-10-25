@@ -4,6 +4,7 @@ import networkx as nx
 import numpy as np
 from scipy import sparse
 from srg import computecovsets as cs
+from srg import graph as gr
 
 
 def compute_shortest_sets(matrix, deadlines):
@@ -55,3 +56,21 @@ def compute_covering_routes(graph_game, targets):
         csr_matrices[v] = sparse.csr_matrix(covset_matrix)
     return csr_matrices
 
+
+
+if __name__ == '__main__':
+    mat = gr.generateRandMatrix(15, 0.3)
+    graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
+    print("Adjacency matrix:")
+    print(graph.getAdjacencyMatrix())
+
+    adj = graph.getAdjacencyMatrix()
+    tgts = graph.getTargets()
+    print(tgts)
+    deadlines = {t: graph.getVertex(t).deadline for t in tgts}
+    print("\n")
+    print(deadlines)
+    # shortest matrix computation
+    shortest_matrix = compute_shortest_sets(adj, deadlines)
+    print("\nShortest Matrix:\n")
+    print(shortest_matrix)
