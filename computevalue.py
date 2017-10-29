@@ -41,16 +41,17 @@ def value_computation(graph, test=False, plot=False):
     target_values = np.array([v.value for v in graph.vertices])
     temp_dict = {k: csr[min_resources[k]] for k in range(len(min_resources))}
     values = {}
-    print(temp_dict)
+    if test:
+        print(temp_dict)
     values[len(min_resources)], _, _ = cr.correlated(temp_dict, target_values)
-    print(cr.correlated(temp_dict, target_values)[0])
     for i in range(len(min_resources), len(max_resources) + 1):
         success, res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i)
         temp_dict = {k: csr[res[k]] for k in range(len(res))}
         values[i], _, _ = cr.correlated(temp_dict, target_values)
     values[len(max_resources)] = 1
-    for key, val in values.iteritems():
-        print("Values of the game with {} resources is {}".format(key, val))
+    if test:
+        for key, val in values.iteritems():
+            print("Values of the game with {} res is {}".format(key, val))
     return values
 
 
@@ -59,5 +60,6 @@ if __name__ == '__main__':
         mat = gr.generateRandMatrix(15, 0.2)
         graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
         if nx.is_connected(nx.from_numpy_matrix(mat)):
-            value_computation(graph, test=True)
+            v = value_computation(graph)
+            print v
             break
