@@ -13,6 +13,7 @@ def set_cover_solver(sets, k=None):
 
     Return
     ------
+    success: boolean (describe the success of the computation)
     res: list of indices of sets in the set_cover optimum
     """
     try:
@@ -83,8 +84,8 @@ def maximum_resources(csr_matrices, targets):
         mat = np.vstack((mat, arr))
         t_li = np.full(shape=(arr.shape[0]), fill_value=v, dtype=np.uint16)
         vertex_list = np.append(vertex_list, t_li)
-    mat_ix = set_cover_solver(mat[:, targets])
-    return vertex_list[mat_ix]
+    success, mat_ix = set_cover_solver(mat[:, targets])
+    return success, vertex_list[mat_ix]
 
 
 if __name__ == '__main__':
