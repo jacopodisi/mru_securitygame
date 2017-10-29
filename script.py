@@ -65,26 +65,15 @@ def compute_covering_routes(graph_game, targets):
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-    import sys
-    mat = gr.generateRandMatrix(15, 0.3)
+    mat = gr.generateRandMatrix(15, 0.2)
+    if not nx.is_connected(nx.from_numpy_matrix(mat)):
+        continue
     graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
-    print("Adjacency matrix:")
+    print("Adjacency matrix:\n")
     print(graph.getAdjacencyMatrix())
-
-    # to display the graph in OS X, must be used "frameworkpython"
-    # or "jupyter notebook" and argument "plot"
-    if len(sys.argv) > 1 and sys.argv[1] == "plot":
-        print("\nGraph:\n")
-        G = nx.from_numpy_matrix(np.array(mat))
-        nx.draw(G, with_labels=True)
-        plt.show()
-
+    print 'targets'
+    print graph.getTargets()
     tgts = graph.getTargets()
     # shortest matrix computation
     shortest_matrix = compute_shortest_sets(graph, tgts)
-    print("\nShortest Matrix:\n")
-    print(shortest_matrix)
     csr = compute_covering_routes(graph, tgts)
-    print("\n")
-    print(csr[0].toarray())
