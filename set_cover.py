@@ -60,3 +60,38 @@ def set_cover_solver(sets, k=None):
         else:
             print 'Gurobi Status after the optim: ', stat
         return False, np.array([])
+
+
+def maximum_resources(csr_matrices, targets):
+    """
+    Parameter
+    ---------
+    csr_matrices: dictionary of type {"vertex_number1": csr_matrix1,
+                                      "vertex_number2": csr_matrix2, ...}
+                  csr_matrix represent the covering sets of the vertex
+    targets: list of targets for which compute the covering routes
+
+    Return
+    ------
+    vertex_list: list of optimal resource position
+    """
+    mat = np.array([], dtype=np.uint8).reshape(
+        (0, csr_matrices[csr_matrices.keys()[0]].shape[1]))
+    vertex_list = np.array([], dtype=np.uint16)
+    for v in csr_matrices:
+        arr = csr_matrices[v].toarray()
+        mat = np.vstack((mat, arr))
+        t_li = np.full(shape=(arr.shape[0]), fill_value=v, dtype=np.uint16)
+        vertex_list = np.append(vertex_list, t_li)
+    mat_ix = set_cover_solver(mat[:, targets])
+    return vertex_list[mat_ix]
+
+
+if __name__ == '__main__':
+    m = np.random.randint(2, size=(50, 10), dtype=np.uint8)
+    success, min0 = set_cover_solver(m)
+    if not success:
+        exit()
+    success, min1 = set_cover_solver(m, k=(len(min0) + 1))
+    if len(min1) != (len(min0) + 1):
+        print 'Error in lengths' + min0 + min1
