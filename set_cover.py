@@ -4,7 +4,7 @@ from gurobipy import *
 import numpy as np
 
 
-def set_cover_solver(sets):
+def set_cover_solver(sets, k=None):
     """ solve the linear integer programming problem using gurobi solver
     Parameters
     ----------
@@ -18,31 +18,45 @@ def set_cover_solver(sets):
     try:
 
         m = Model("setcover")
+        m.setParam('OutputFlag', False)
+
+        univ = sets.shape[1]
+        nsets = sets.shape[0]
 
         # VARIABLES
         # tell if a set is choose (1) or not (0)
-        x = np.empty(shape=(sets.shape[0]), dtype=object)
-        for s in xrange(sets.shape[0]):
-            x[s] = m.addVar(vtype=GRB.BINARY, name=str(s))
+        vars = []
+        for s in range(nsets):
+            vars.append(m.addVar(vtype=GRB.BINARY))
 
         m.update()
 
-        # OBJ
-        m.setObjective(quicksum(m.getVars()))
-
         # CONSTRAINTS
         # covering constraint
-        m.addConstr(quicksum((x.dot(sets) >= 1)) >= sets.shape[1])
+        for t in range(univ):
+            m.addConstr(
+                quicksum(sets[r, t] * vars[r] for r in range(nsets)) >= 1)
+
+        if k is None:
+            # OBJ
+            m.setObjective(quicksum(m.getVars()))
+        else:
+            # CONSTRAINT
+            m.addConstr(quicksum(vars) == k)
 
         m.optimize()
 
-        res = np.array([], dtype=np.uint16)
-        for s in xrange(sets.shape[0]):
-            if m.getVarByName(str(s)).x == 1:
-                res = np.append(res, s)
+        m.write('set_cover.lp')
 
-        return res
+        vars = m.getAttr('x', vars)
+
+        return True, np.nonzero(vars)[0]
 
     except GurobiError:
+        stat = m.getAttr(GRB.Attr.Status)
         print('Error while computing the set cover optimization problem')
-        print 'Gurobi Status after the optim: ', m.getAttr(GRB.Attr.Status)
+        if stat == 3:
+            print 'Infeasible solution'
+        else:
+            print 'Gurobi Status after the optim: ', stat
+        return False, np.array([])
