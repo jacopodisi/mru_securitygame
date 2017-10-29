@@ -63,6 +63,33 @@ def compute_covering_routes(graph_game, targets):
     return csr_matrices
 
 
+def local_search(matrix, deadlines, number_of_resources):
+    """ Compute the enumeration of the optimal position of the given
+        number of resources.
+    Parameters
+    ----------
+    matrix: adjacency matrix of the graph
+    deadlines: dictionary of type {"target_1": deadline_1,
+                                    "target_2": deadline_2, ...}
+    number_of_resources: the number of resources of the defender for which
+                         enumerate their disposition on the graph
+
+    Return
+    ------
+    enum_matrix: numpy matrix of (|enum| x |num_res|), where each row
+                 0 represent the shortest_set of node 0 and so on..
+    """
+    return
+
+
+def compute_graph(file_path):
+    """ given the path of the file containing the description of the graph
+        return a corresponding Graph object
+    """
+    vertices = np.array([])
+    G = gr.Graph(vertices)
+    return G
+
 
 if __name__ == '__main__':
     mat = gr.generateRandMatrix(15, 0.2)
