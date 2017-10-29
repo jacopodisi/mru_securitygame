@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-import sys
 import numpy as np
 import networkx as nx
 import set_cover as sc
@@ -9,17 +7,19 @@ from patrolling.correlated import correlated_row_gen as cr
 
 
 def value_computation(graph, test=False, plot=False):
+    """ Compute the values of the graph for every number of resources
+        (from the minimum to the optimum)
+    Parameters
+    ----------
+    graph: instance of gr.Graph class
+
+    Return
+    ------
+    values: dictionary of type {"num_resources": game_value, ...}
+    """
     if test:
         print("Adjacency matrix:\n")
         print(graph.getAdjacencyMatrix())
-
-    # to display the graph in OS X, must be used "frameworkpython"
-    # or "jupyter notebook" and argument "plot"
-    if len(sys.argv) > 1 and sys.argv[1] == "plot" and test:
-        print("\nGraph:\n")
-        G = nx.from_numpy_matrix(np.array(mat))
-        nx.draw(G, with_labels=True)
-        plt.show()
 
     tgts = graph.getTargets()
     # shortest matrix computation
