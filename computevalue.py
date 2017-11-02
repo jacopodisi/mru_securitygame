@@ -115,10 +115,14 @@ def compute_covering_routes(graph_game, targets):
 
 
 if __name__ == '__main__':
+    import iomanager as io
     while True:
-        mat = gr.generateRandMatrix(15, 0.2)
+        mat = gr.generateRandMatrix(15, 0.5)
         if nx.is_connected(nx.from_numpy_matrix(mat)):
             graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
-            v = compute_value(graph, test=True)
-            print v
+            v = compute_value(graph)
+            io.save_results(v, filename="re.pickle")
+            succ, res = io.load_results("re.pickle", plot=True)
+            if succ:
+                print res
             break
