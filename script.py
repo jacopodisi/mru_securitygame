@@ -5,7 +5,7 @@ import numpy as np
 from scipy import sparse
 from srg import computecovsets as cs
 from srg import graph as gr
-from srg import correlated as cr
+from patrolling.correlated import correlated_row_gen as cr
 import set_cover as sc
 
 
