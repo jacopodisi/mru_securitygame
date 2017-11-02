@@ -88,6 +88,25 @@ def maximum_resources(csr_matrices, targets):
     return success, vertex_list[mat_ix]
 
 
+def local_search(matrix, deadlines, number_of_resources):
+    """ Compute the enumeration of the optimal position of the given
+        number of resources.
+    Parameters
+    ----------
+    matrix: adjacency matrix of the graph
+    deadlines: dictionary of type {"target_1": deadline_1,
+                                    "target_2": deadline_2, ...}
+    number_of_resources: the number of resources of the defender for which
+                         enumerate their disposition on the graph
+
+    Return
+    ------
+    enum_matrix: numpy matrix of (|enum| x |num_res|), where each row
+                 0 represent the shortest_set of node 0 and so on..
+    """
+    return
+
+
 if __name__ == '__main__':
     m = np.random.randint(2, size=(50, 10), dtype=np.uint8)
     success, min0 = set_cover_solver(m)
