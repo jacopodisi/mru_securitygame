@@ -6,7 +6,7 @@ from scipy import sparse
 from srg import computecovsets as cs
 from srg import graph as gr
 from patrolling.correlated import correlated_row_gen as cr
-import set_cover as sc
+import ILP_solver as sc
 
 
 mtype = np.uint8
