@@ -84,16 +84,16 @@ class BTree(object):
             if i==1:
                 node = node.right;
                 if node is None:
-                    return False;
+                    return (True, True);
             else:
                 node = node.left;
                 if node is None:
-                    return False;
+                    return (True, True);
         if cost < (node.getCost()):#if the route v is better than one which is present, return True (we should update the tree)
             node.setCost(cost);
-            return True;
+            return (True, False);
         else:
-            return False;
+            return (False, False);
 
 #==============================================================================
 #     update function: it updates the btree used to store the routes
