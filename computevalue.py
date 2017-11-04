@@ -106,7 +106,6 @@ def compute_covering_routes(graph_game, targets):
     for v in range(n_vertices):
         covset = cs.computeCovSet(graph_game, v, targets)
         covset_matrix = np.zeros((len(covset), n_vertices), dtype=mtype)
-        # cs_matrices[v] = np.vstack(route[0]
         for route in range(len(covset)):
             covset_matrix[route, covset[route][0]] = 1
 
