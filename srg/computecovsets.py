@@ -64,9 +64,9 @@ def computeCovSet(G, v, targets):
                             # if so, subsistute them                    
                     Q.append([np.append(q[0],w), cost.astype(int)]);
                     U = btree.search(Q[-1][1],bt.purgeBinaryVector(bt.binaryVectorFromRoute(Q[-1][0],targets)));
-                    if not U: #just take the depth of the tree where the nodes goes to the right(r contains the target)
+                    if U[0]: #just take the depth of the tree where the nodes goes to the right(r contains the target)
                         C.append([np.append(q[0],w),cost]);
-                        btree.update(C[-1][0],targets,btree.root,bt.binaryVectorFromRoute(C[-1][0],targets),C[-1][0]);#update the tree (maybe its better to do it in the search function?)
+                        if U[1]:
                             btree.update(C[-1][0],targets,btree.root,bt.purgeBinaryVector(bt.binaryVectorFromRoute(C[-1][0],targets)),C[-1][0]);#update the tree (maybe its better to do it in the search function?)
         #print("\n\n",[c for c in C if len(c[0])==i+1]);
         if i > 0:
