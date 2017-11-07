@@ -12,6 +12,9 @@ import ILP_solver as sc
 mtype = np.uint8
 
 
+shortest_paths = np.array([], dtype=mtype)
+
+
 def compute_value(graph, test=False, plot=False):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
@@ -75,15 +78,17 @@ def compute_shortest_sets(graph_game, targets):
     shortest_matrix: numpy matrix of (|nodes| x |nodes|), where the row
                    0 represent the shortest_set of node 0 and so on..
     """
+    global shortest_paths
     matrix = graph_game.getAdjacencyMatrix()
     if gr.inf == 999:
         matrix[matrix == 999] = 0
     deadlines = {t: graph_game.getVertex(t).deadline for t in targets}
-    shortest_costs = sparse.csgraph.shortest_path(
-        matrix, directed=False, unweighted=True)
+    if shortest_paths.size == 0:
+        shortest_paths = sparse.csgraph.shortest_path(
+            matrix, directed=False, unweighted=True)
     shortest_matrix = np.zeros(shape=matrix.shape, dtype=mtype)
     for tgt, dl in deadlines.iteritems():
-        ok = shortest_costs[:, tgt] <= dl
+        ok = shortest_paths[:, tgt] <= dl
         shortest_matrix[ok, tgt] = 1
     return shortest_matrix
 
