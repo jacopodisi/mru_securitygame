@@ -79,11 +79,12 @@ def compute_shortest_sets(graph_game, targets):
     if gr.inf == 999:
         matrix[matrix == 999] = 0
     deadlines = {t: graph_game.getVertex(t).deadline for t in targets}
-    G = nx.from_numpy_matrix(matrix)
+    shortest_costs = sparse.csgraph.shortest_path(
+        matrix, directed=False, unweighted=True)
     shortest_matrix = np.zeros(shape=matrix.shape, dtype=mtype)
     for tgt, dl in deadlines.iteritems():
-        cov = nx.single_source_shortest_path_length(G, tgt, cutoff=dl)
-        shortest_matrix[cov.keys(), tgt] = 1
+        ok = shortest_costs[:, tgt] <= dl
+        shortest_matrix[ok, tgt] = 1
     return shortest_matrix
 
 
