@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import networkx as nx
 import numpy as np
 from scipy import sparse
 from srg import computecovsets as cs
@@ -119,15 +118,38 @@ def compute_covering_routes(graph_game, targets):
     return csr_matrices
 
 
+def is_connected(matrix):
+    """ Check wheter an adjacency matrix describe a connected graph or not
+        using the shortest path matrix.
+    Parameter
+    ---------
+    matrix: matrix representing the adjacency matrix of an undirected graph
+
+    Return
+    ------
+    boolean: True if the graph is connected, False otherwise
+    """
+    global shortest_paths
+    if shortest_paths.size == 0:
+        shortest_paths = sparse.csgraph.shortest_path(
+            matrix, directed=False, unweighted=True)
+        shortest_paths[shortest_paths == np.inf] = 0
+    y = np.eye(shortest_paths.shape[0], dtype=mtype)
+    count_zero = np.count_nonzero((shortest_paths + y) == 0)
+    if count_zero == 0:
+        return True
+    return False
+
+
 if __name__ == '__main__':
     import iomanager as io
     while True:
-        mat = gr.generateRandMatrix(15, 0.5)
-        if nx.is_connected(nx.from_numpy_matrix(mat)):
+        mat = gr.generateRandMatrix(15, 0.9)
+        if is_connected(mat):
             graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
-            v = compute_value(graph)
-            io.save_results(v, filename="re.pickle")
-            succ, res = io.load_results("re.pickle", plot=True)
-            if succ:
+            res = compute_value(graph)
+            # io.save_results(v, filename="re.pickle")
+            # succ, res = io.load_results("re.pickle")
+            if True:
                 print res
             break
