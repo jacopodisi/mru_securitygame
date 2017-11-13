@@ -58,7 +58,8 @@ def compute_value(graph, test=False, plot=False):
 
 def compute_shortest_sets(graph_game, targets):
     """ Compute a list of array containing the reachable
-        target from each vetrex.
+        target from each vetrex. Column corresponding to non-targets
+        are set to 0.
 
     Parameters
     ----------
@@ -89,7 +90,9 @@ def compute_shortest_sets(graph_game, targets):
 
 def compute_covering_routes(graph_game, targets):
     """ compute all the covering routes, from each vertex, for the given
-        set of targets.
+        set of targets. The covering routes will contain always the starting
+        vertex, wheteher it is a target or not. Other non-target vertex will
+        be set to 0.
     Parameters
     ----------
     graph_game: instance of Graph class representing the game
