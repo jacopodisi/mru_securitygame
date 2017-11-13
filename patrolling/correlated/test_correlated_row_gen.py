@@ -64,22 +64,22 @@ class Test_update_joint_I(unittest.TestCase):
         self.assertEqual(selected_routes,{0:[(1,0),(2,0)], 1:[(1,0),(2,1)]})
 
 
-class Test_correlated_row_gen(unittest.TestCase):
+# class Test_correlated_row_gen(unittest.TestCase):
 
-    def test_random_game_basic(self):
-        pickle_path='./pickle_test.pickle'
+#     def test_random_game_basic(self):
+#         pickle_path='./pickle_test.pickle'
 
-        res=correlated_row_gen.correlated(pickle_path)
+#         res=correlated_row_gen.correlated(pickle_path)
 
-        testing.assert_almost_equal(res[0], 0.96667, decimal=5)
+#         testing.assert_almost_equal(res[0], 0.96667, decimal=5)
 
 
-    def test_random_game_advanced(self):
-         pickle_path='./pickle_test2.pickle'
+#     def test_random_game_advanced(self):
+#          pickle_path='./pickle_test2.pickle'
 
-         res=correlated_row_gen.correlated(pickle_path)
+#          res=correlated_row_gen.correlated(pickle_path)
 
-         testing.assert_almost_equal(res[0], 0.92373, decimal=5)
+#          testing.assert_almost_equal(res[0], 0.92373, decimal=5)
 
 class Test_random_init(unittest.TestCase):
 
