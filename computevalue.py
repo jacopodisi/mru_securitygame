@@ -30,12 +30,8 @@ def compute_value(graph, test=False, plot=False):
     # shortest matrix computation
     shortest_matrix = compute_shortest_sets(graph, tgts)
     csr = compute_covering_routes(graph, tgts)
-    success, min_resources = sc.set_cover_solver(shortest_matrix[:, tgts])
-    if not success:
-        return []
-    success, max_resources = sc.maximum_resources(csr, tgts)
-    if not success:
-        return []
+    min_resources = sc.set_cover_solver(shortest_matrix[:, tgts])
+    max_resources = sc.maximum_resources(csr, tgts)
     if test:
         print("\nShortest Matrix:\n")
         print(shortest_matrix)
@@ -50,7 +46,7 @@ def compute_value(graph, test=False, plot=False):
     game_values = {}
     game_values[len(min_resources)], _, _ = cr.correlated(temp_dict, values)
     for i in range(len(min_resources) + 1, len(max_resources)):
-        success, res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i)
+        res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i)
         temp_dict = {k: csr[res[k]] for k in range(len(res))}
         game_values[i], _, _ = cr.correlated(temp_dict, values)
     game_values[len(max_resources)] = 1
