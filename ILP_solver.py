@@ -13,7 +13,6 @@ def set_cover_solver(sets, k=None):
 
     Return
     ------
-    success: boolean (describe the success of the computation)
     res: list of indices of sets in the set_cover optimum
     """
     try:
@@ -51,7 +50,7 @@ def set_cover_solver(sets, k=None):
 
         vars = m.getAttr('x', vars)
 
-        return True, np.nonzero(vars)[0]
+        return np.nonzero(vars)[0]
 
     except GurobiError:
         stat = m.getAttr(GRB.Attr.Status)
@@ -60,7 +59,7 @@ def set_cover_solver(sets, k=None):
             print 'Infeasible solution'
         else:
             print 'Gurobi Status after the optim: ', stat
-        return False, np.array([])
+        raise
 
 
 def maximum_resources(csr_matrices, targets):
@@ -76,16 +75,19 @@ def maximum_resources(csr_matrices, targets):
     ------
     vertex_list: list of optimal resource position
     """
-    mat = np.array([], dtype=np.uint8).reshape(
-        (0, csr_matrices[csr_matrices.keys()[0]].shape[1]))
+    tot_tgts = csr_matrices[csr_matrices.keys()[0]].shape[1]
+    if np.any(targets < 0) or np.any(targets >= tot_tgts):
+        raise ValueError('Targets in input of maximum_resources function'
+                         'are not tartgets of the csr_matrices')
+    mat = np.array([], dtype=np.uint8).reshape((0, tot_tgts))
     vertex_list = np.array([], dtype=np.uint16)
     for v in csr_matrices:
         arr = csr_matrices[v].toarray()
         mat = np.vstack((mat, arr))
         t_li = np.full(shape=(arr.shape[0]), fill_value=v, dtype=np.uint16)
         vertex_list = np.append(vertex_list, t_li)
-    success, mat_ix = set_cover_solver(mat[:, targets])
-    return success, vertex_list[mat_ix]
+    mat_ix = set_cover_solver(mat[:, targets])
+    return vertex_list[list(mat_ix)]
 
 
 def local_search(matrix, deadlines, number_of_resources):
