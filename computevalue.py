@@ -70,6 +70,10 @@ def compute_shortest_sets(graph_game, targets):
     shortest_matrix: numpy matrix of (|nodes| x |nodes|), where the row
                    0 represent the shortest_set of node 0 and so on..
     """
+    if not np.all(
+            np.in1d(targets, graph_game.getTargets())):
+        raise ValueError('Targets in input of compute_shortest_sets function'
+                         'are not tartgets of the graph_game')
     matrix = graph_game.getAdjacencyMatrix()
     if gr.inf == 999:
         matrix[matrix == 999] = 0
@@ -97,6 +101,10 @@ def compute_covering_routes(graph_game, targets):
                                       "vertex_number2": csr_matrix2, ...}
                   csr_matrix represent the covering sets of the vertex
     """
+    if not np.all(
+            np.in1d(targets, graph_game.getTargets())):
+        raise ValueError('Targets in input of compute_covering_routes function'
+                         'are not tartgets of the graph_game')
     n_vertices = len(graph_game.getVertices())
     csr_matrices = {}
     for v in range(n_vertices):
