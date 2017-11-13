@@ -12,6 +12,7 @@ I, know a place, where the 'graph' is really greener! [Katy Perry]
 
 import shortestpath as sp
 import numpy as np
+from scipy import sparse
 
 inf = 999; #if an arc has this weight, it means that two nodes are not connected on G
 
@@ -183,19 +184,25 @@ class Graph(object):
 #  p in the probability that a node is connected to another one (we assume indepent the prob that i is connected to j, and i is connected to w different from j)    
 # it returns
 #  the adjacency matrix M
+#  niter is the maximum number of iteration to find a connected graph (default 100)
 #==============================================================================
-def generateRandMatrix(n, p):
-    l = 0;
-    M = np.array([[0 for i in range(n)] for j in range(n)]);
-    for i in range(n):
-        M[i][i] = 1;
-    for i in range(n):
-        for j in range(l):
-            if np.random.rand() <= p:
-                M[i][j] = 1;
-                M[j][i] = 1;
-        l += 1;
-    return M;
+def generateRandMatrix(n, p, niter=100):
+    for _ in range(niter):
+        l = 0;
+        M = np.zeros(shape=(n, n), dtype=np.uint8);
+        for i in range(n):
+            M[i][i] = 1;
+        for i in range(n):
+            for j in range(l):
+                if np.random.rand() <= p:
+                    M[i][j] = 1;
+                    M[j][i] = 1;
+            l += 1;
+        connected = sparse.csgraph.connected_components(
+            M, directed=False, return_labels=False) == 1
+        if connected:
+            return M;
+    raise ValueError('unable to create a connected graph. Modify parameters.')
     
 #==============================================================================
 # function that creates a graph that is composed by n vertices whose values is between (0,1] 
