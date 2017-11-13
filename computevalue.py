@@ -117,10 +117,13 @@ def compute_covering_routes(graph_game, targets):
 
 
 if __name__ == '__main__':
-    import iomanager as io
+#    import iomanager as io
     while True:
         mat = gr.generateRandMatrix(15, 0.9)
-        if is_connected(mat):
+        print mat
+        connected = sparse.csgraph.connected_components(
+            mat, directed=False, return_labels=False) == 1
+        if connected:
             graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
             res = compute_value(graph)
             # io.save_results(v, filename="re.pickle")
