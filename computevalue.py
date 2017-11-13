@@ -112,32 +112,8 @@ def compute_covering_routes(graph_game, targets):
         covset_matrix = np.zeros((len(covset), n_vertices), dtype=mtype)
         for route in range(len(covset)):
             covset_matrix[route, covset[route][0]] = 1
-
         csr_matrices[v] = sparse.csr_matrix(covset_matrix)
     return csr_matrices
-
-
-def is_connected(matrix):
-    """ Check wheter an adjacency matrix describe a connected graph or not
-        using the shortest path matrix.
-    Parameter
-    ---------
-    matrix: matrix representing the adjacency matrix of an undirected graph
-
-    Return
-    ------
-    boolean: True if the graph is connected, False otherwise
-    """
-    global shortest_paths
-    if shortest_paths.size == 0:
-        shortest_paths = sparse.csgraph.shortest_path(
-            matrix, directed=False, unweighted=True)
-        shortest_paths[shortest_paths == np.inf] = 0
-    y = np.eye(shortest_paths.shape[0], dtype=mtype)
-    count_zero = np.count_nonzero((shortest_paths + y) == 0)
-    if count_zero == 0:
-        return True
-    return False
 
 
 if __name__ == '__main__':
