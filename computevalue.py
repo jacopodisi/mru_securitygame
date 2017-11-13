@@ -11,6 +11,7 @@ import ILP_solver as sc
 mtype = np.uint8
 
 
+# @profile
 def compute_value(graph, test=False, plot=False):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
@@ -22,27 +23,18 @@ def compute_value(graph, test=False, plot=False):
     ------
     values: dictionary of type {"num_resources": game_value, ...}
     """
-    if test:
-        print("Adjacency matrix:\n")
-        print(graph.getAdjacencyMatrix())
-
     tgts = graph.getTargets()
     # shortest matrix computation
     shortest_matrix = compute_shortest_sets(graph, tgts)
     csr = compute_covering_routes(graph, tgts)
+
     min_resources = sc.set_cover_solver(shortest_matrix[:, tgts])
     max_resources = sc.maximum_resources(csr, tgts)
-    if test:
-        print("\nShortest Matrix:\n")
-        print(shortest_matrix)
-        print("\nMinimum number of resources:\n")
-        print(min_resources)
-        print("\nMaximum number of resources:\n")
-        print(max_resources)
+
     values = np.array([v.value for v in graph.vertices])
+    # build a dictionary with cov routes of selected resources
     temp_dict = {k: csr[min_resources[k]] for k in range(len(min_resources))}
-    if test:
-        print(temp_dict)
+
     game_values = {}
     game_values[len(min_resources)], _, _ = cr.correlated(temp_dict, values)
     for i in range(len(min_resources) + 1, len(max_resources)):
@@ -50,12 +42,11 @@ def compute_value(graph, test=False, plot=False):
         temp_dict = {k: csr[res[k]] for k in range(len(res))}
         game_values[i], _, _ = cr.correlated(temp_dict, values)
     game_values[len(max_resources)] = 1
-    if test:
-        for key, val in game_values.iteritems():
-            print("Values of the game with {} res is {}".format(key, val))
+
     return game_values
 
 
+# @profile
 def compute_shortest_sets(graph_game, targets):
     """ Compute a list of array containing the reachable
         target from each vetrex. Column corresponding to non-targets
@@ -88,6 +79,7 @@ def compute_shortest_sets(graph_game, targets):
     return shortest_matrix
 
 
+# @profile
 def compute_covering_routes(graph_game, targets):
     """ compute all the covering routes, from each vertex, for the given
         set of targets. The covering routes will contain always the starting
@@ -120,17 +112,11 @@ def compute_covering_routes(graph_game, targets):
 
 
 if __name__ == '__main__':
-#    import iomanager as io
-    while True:
-        mat = gr.generateRandMatrix(15, 0.9)
-        print mat
-        connected = sparse.csgraph.connected_components(
-            mat, directed=False, return_labels=False) == 1
-        if connected:
-            graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
-            res = compute_value(graph)
-            # io.save_results(v, filename="re.pickle")
-            # succ, res = io.load_results("re.pickle")
-            if True:
-                print res
-            break
+    # import iomanager as io
+    mat = gr.generateRandMatrix(5, 0.1)
+    # print mat
+    graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
+    res = compute_value(graph)
+    # io.save_results(v, filename="re.pickle")
+    # res = io.load_results("re.pickle")
+    # print res
