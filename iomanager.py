@@ -51,9 +51,8 @@ def load_results(filename, plot=False):
     """
     filename = "./results/" + filename
     if not os.path.isfile(filename):
-        print 'Error displaying the results.'
-        print 'File {} do not exist'.format(filename)
-        return False, {}
+        m = 'File {} do not exist'.format(filename)
+        raise IOError(m)
     with open(filename, mode='r') as f:
         res = pickle.load(f)
     sort_res = sorted(res.items())
@@ -61,4 +60,4 @@ def load_results(filename, plot=False):
         x, y = zip(*sort_res)
         plt.plot(x, y)
         plt.show()
-    return True, sort_res
+    return sort_res
