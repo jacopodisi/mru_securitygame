@@ -12,7 +12,7 @@ mtype = np.uint8
 
 
 # @profile
-def compute_value(graph, test=False, plot=False):
+def compute_values(graph, test=False, plot=False):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
     Parameters
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     mat = gr.generateRandMatrix(5, 0.1)
     # print mat
     graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
-    res = compute_value(graph)
+    res = compute_values(graph)
     # io.save_results(v, filename="re.pickle")
     # res = io.load_results("re.pickle")
     # print res
