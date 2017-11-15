@@ -33,13 +33,13 @@ def compute_values(graph, test=False, plot=False):
 
     tgt_values = np.array([v.value for v in graph.vertices])
     # build a dictionary with cov routes of selected resources
-    temp_dict = {k: csr[min_resources[k]] for k in range(len(min_resources))}
+    temp_dict = {k + 1: csr[min_res[k]] for k in range(len(min_res))}
 
     game_values = {}
     game_values[len(min_res)], _, _ = cr.correlated(temp_dict, tgt_values)
     for i in range(len(min_res) + 1, len(max_res)):
         res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i)
-        temp_dict = {k: csr[res[k]] for k in range(len(res))}
+        temp_dict = {k + 1: csr[res[k]] for k in range(len(res))}
         game_values[i], _, _ = cr.correlated(temp_dict, tgt_values)
     game_values[len(max_res)] = 1
 
