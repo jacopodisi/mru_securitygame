@@ -28,20 +28,20 @@ def compute_values(graph, test=False, plot=False):
     shortest_matrix = compute_shortest_sets(graph, tgts)
     csr = compute_covering_routes(graph, tgts)
 
-    min_resources = sc.set_cover_solver(shortest_matrix[:, tgts])
-    max_resources = sc.maximum_resources(csr, tgts)
+    min_res = sc.set_cover_solver(shortest_matrix[:, tgts])
+    max_res = sc.maximum_resources(csr, tgts)
 
-    values = np.array([v.value for v in graph.vertices])
+    tgt_values = np.array([v.value for v in graph.vertices])
     # build a dictionary with cov routes of selected resources
     temp_dict = {k: csr[min_resources[k]] for k in range(len(min_resources))}
 
     game_values = {}
-    game_values[len(min_resources)], _, _ = cr.correlated(temp_dict, values)
-    for i in range(len(min_resources) + 1, len(max_resources)):
+    game_values[len(min_res)], _, _ = cr.correlated(temp_dict, tgt_values)
+    for i in range(len(min_res) + 1, len(max_res)):
         res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i)
         temp_dict = {k: csr[res[k]] for k in range(len(res))}
-        game_values[i], _, _ = cr.correlated(temp_dict, values)
-    game_values[len(max_resources)] = 1
+        game_values[i], _, _ = cr.correlated(temp_dict, tgt_values)
+    game_values[len(max_res)] = 1
 
     return game_values
 
