@@ -464,4 +464,5 @@ class TestComputeValue6(unittest.TestCase):
 
         values = {1: 0.75, 2: 1}
 
-        self.assertDictEqual(result, values)
+        np.testing.assert_almost_equal(
+            result[1], values[1], decimal=5)
