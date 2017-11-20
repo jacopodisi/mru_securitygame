@@ -12,7 +12,7 @@ mtype = np.uint8
 
 
 # @profile
-def compute_values(graph, test=False, plot=False):
+def compute_values(graph, test=False, plot=False, dominance=False):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
     Parameters
@@ -26,7 +26,7 @@ def compute_values(graph, test=False, plot=False):
     tgts = graph.getTargets()
     # shortest matrix computation
     shortest_matrix = compute_shortest_sets(graph, tgts)
-    csr = compute_covering_routes(graph, tgts)
+    csr = compute_covering_routes(graph, tgts, dominance=dominance)
 
     min_res = sc.set_cover_solver(shortest_matrix[:, tgts])
     max_res = sc.maximum_resources(csr, tgts)
@@ -36,14 +36,23 @@ def compute_values(graph, test=False, plot=False):
     temp_dict = {k + 1: csr[min_res[k]] for k in range(len(min_res))}
 
     game_values = {}
-    game_values[len(min_res)], _, _ = cr.correlated(temp_dict, tgt_values)
+    strategies = {}
+    placements = {}
+
+    placements[len(min_res)] = min_res
+    game_values[len(min_res)], strategies[len(min_res)], _ = cr.correlated(temp_dict, tgt_values)
     for i in range(len(min_res) + 1, len(max_res)):
         res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i)
         temp_dict = {k + 1: csr[res[k]] for k in range(len(res))}
-        game_values[i], _, _ = cr.correlated(temp_dict, tgt_values)
+        placements[i] = res
+        game_values[i], strategies[i], _ = cr.correlated(temp_dict, tgt_values)
+    
+    temp_dict = {k + 1: csr[max_res[k]] for k in range(len(max_res))}
+    placements[len(max_res)] = max_res
     game_values[len(max_res)] = 1
+    strategies[len(max_res)] = 0
 
-    return game_values
+    return game_values, placements, strategies
 
 
 # @profile
@@ -80,7 +89,7 @@ def compute_shortest_sets(graph_game, targets):
 
 
 # @profile
-def compute_covering_routes(graph_game, targets):
+def compute_covering_routes(graph_game, targets, dominance=False):
     """ compute all the covering routes, from each vertex, for the given
         set of targets. The covering routes will contain always the starting
         vertex, wheteher it is a target or not. Other non-target vertex will
@@ -89,6 +98,8 @@ def compute_covering_routes(graph_game, targets):
     ----------
     graph_game: instance of Graph class representing the game
     targets: list of targets for which compute the covering routes
+    dominance: If set to True the dominanted route for each vertex
+               are eliminated
 
     Return
     ------
@@ -105,18 +116,33 @@ def compute_covering_routes(graph_game, targets):
     for v in range(n_vertices):
         covset = cs.computeCovSet(graph_game, v, targets)
         covset_matrix = np.zeros((len(covset), n_vertices), dtype=mtype)
-        for route in range(len(covset)):
-            covset_matrix[route, covset[route][0]] = 1
+
+        if dominance:
+            for route in range(len(covset)):
+                covset_matrix[route, covset[route][0]] = 1
+            covset_matrix = np.unique(covset_matrix, axis=0)
+            for route in range(covset_matrix.shape[0]):
+                a = covset_matrix[route] <= covset_matrix
+                dom = np.all(a, axis=1)
+                dom[route] = False
+                if np.any(dom):
+                    covset_matrix[route] = 0
+            covset_matrix = covset_matrix[~np.all(
+                covset_matrix == 0, axis=1)]
+        else:
+            for route in range(len(covset)):
+                covset_matrix[route, covset[route][0]] = 1
+
         csr_matrices[v] = sparse.csr_matrix(covset_matrix)
     return csr_matrices
 
 
 if __name__ == '__main__':
     # import iomanager as io
-    mat = gr.generateRandMatrix(5, 0.1)
+    mat = gr.generateRandMatrix(10, 0.5)
     # print mat
-    graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 0.8, 0, 3)
-    res = compute_values(graph)
+    graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 0, 3)
+    res = compute_values(graph, dominance=True)
     # io.save_results(v, filename="re.pickle")
     # res = io.load_results("re.pickle")
-    # print res
+    print res
