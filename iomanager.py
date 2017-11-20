@@ -27,14 +27,19 @@ def save_results(res, filename=""):
     if not os.path.exists("./results/"):
         os.makedirs("./results/")
     if filename == "":
-        file = 0
+        filename = "res"
+    filename = "./results/" + filename
+    file = 0
+    if os.path.isfile(filename + ".pickle"):
         while True:
-            if not os.path.isfile("res" + str(file) + ".pickle"):
+            if not os.path.isfile(filename + "_ix" + str(file) + ".pickle"):
                 break
             file += 1
-        filename = "res" + str(file) + ".pickle"
-    with open("./results/" + filename, mode='wb') as f:
+        filename = filename + "_ix" + str(file)
+    filename = filename + ".pickle"
+    with open(filename, mode='wb') as f:
         pickle.dump(res, f, protocol=pickle.HIGHEST_PROTOCOL)
+    print "Saved result in file " + filename
 
 
 def load_results(filename, plot=False):
@@ -49,15 +54,10 @@ def load_results(filename, plot=False):
     boolean: described the success of the operation
     dicitonary: actual results
     """
-    filename = "./results/" + filename
+    filename = "./results/" + filename + ".pickle"
     if not os.path.isfile(filename):
         m = 'File {} do not exist'.format(filename)
         raise IOError(m)
     with open(filename, mode='r') as f:
         res = pickle.load(f)
-    sort_res = sorted(res.items())
-    if plot:
-        x, y = zip(*sort_res)
-        plt.plot(x, y)
-        plt.show()
-    return sort_res
+    return res
