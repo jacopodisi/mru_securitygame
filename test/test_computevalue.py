@@ -85,12 +85,25 @@ class TestComputeValue1(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok4, msg=ms)
 
+        dom_cov_routes = f(self.G, self.G.getTargets(), dominance=True)
+        dom_result0 = dom_cov_routes[self.v0.getVertexNumber()].toarray()
+        dom_cov_route_0 = np.array(
+            [[1, 1, 1, 1, 0],
+             [1, 1, 1, 0, 1],
+             [1, 1, 0, 1, 1],
+             [1, 0, 1, 1, 1]])
+        ok0_d = tf.compare_row_mat(dom_result0, dom_cov_route_0)
+        ms = "Error computing the dominating covering routes v0\nResult:\n" \
+            + str(dom_result0) + "\nShould be:\n" + str(dom_cov_route_0)
+        self.assertTrue(ok0_d, msg=ms)
+
         too_long = np.arange(len(self.G.getTargets()) + 1)
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        cv.compute_values(self.G)
-        self.assertTrue(True)
+        res, _, _ = cv.compute_values(self.G)
+        ms = str(res)
+        self.assertEqual(1, max(res.values()), msg=ms)
 
 
 class TestComputeValue2(unittest.TestCase):
@@ -150,12 +163,21 @@ class TestComputeValue2(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok, msg=ms)
 
+        dom_cov_routes = f(self.G, self.G.getTargets(), dominance=True)
+        dom_result0 = dom_cov_routes[self.v0.getVertexNumber()].toarray()
+        dom_cov_route_0 = np.array(
+            [[1, 0, 0, 0, 0]])
+        ok0_d = tf.compare_row_mat(dom_result0, dom_cov_route_0)
+        ms = "Error computing the dominating covering routes v0\nResult:\n" \
+            + str(dom_result0) + "\nShould be:\n" + str(dom_cov_route_0)
+        self.assertTrue(ok0_d, msg=ms)
+
         too_long = np.arange(len(self.G.getTargets()) + 1)
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        cv.compute_values(self.G)
-        self.assertTrue(True)
+        res, _, _ = cv.compute_values(self.G)
+        self.assertEqual(1, max(res.values()), msg=None)
 
 
 class TestComputeValue3(unittest.TestCase):
@@ -230,12 +252,21 @@ class TestComputeValue3(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok, msg=ms)
 
+        dom_cov_routes = f(self.G, self.G.getTargets(), dominance=True)
+        dom_result2 = dom_cov_routes[self.v2.getVertexNumber()].toarray()
+        dom_cov_route_2 = np.array(
+            [[1, 1, 1, 1, 1]])
+        ok2_d = tf.compare_row_mat(dom_result2, dom_cov_route_2)
+        ms = "Error computing the dominating covering routes v0\nResult:\n" \
+            + str(dom_result2) + "\nShould be:\n" + str(dom_cov_route_2)
+        self.assertTrue(ok2_d, msg=ms)
+
         too_long = np.arange(len(self.G.getTargets()) + 1)
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        cv.compute_values(self.G)
-        self.assertTrue(True)
+        res, _, _ = cv.compute_values(self.G)
+        self.assertEqual(1, max(res.values()), msg=None)
 
 
 class TestComputeValue4(unittest.TestCase):
@@ -305,12 +336,22 @@ class TestComputeValue4(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok, msg=ms)
 
+        dom_cov_routes = f(self.G, self.G.getTargets(), dominance=True)
+        dom_result2 = dom_cov_routes[self.v2.getVertexNumber()].toarray()
+        dom_cov_route_2 = np.array(
+            [[0, 1, 1, 1, 1],
+             [1, 1, 1, 0, 1]])
+        ok2_d = tf.compare_row_mat(dom_result2, dom_cov_route_2)
+        ms = "Error computing the dominating covering routes v0\nResult:\n" \
+            + str(dom_result2) + "\nShould be:\n" + str(dom_cov_route_2)
+        self.assertTrue(ok2_d, msg=ms)
+
         too_long = np.arange(len(self.G.getTargets()) + 1)
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        cv.compute_values(self.G)
-        self.assertTrue(True)
+        res, _, _ = cv.compute_values(self.G)
+        self.assertEqual(1, max(res.values()), msg=None)
 
 
 class TestComputeValue5(unittest.TestCase):
@@ -390,12 +431,26 @@ class TestComputeValue5(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok, msg=ms)
 
+        dom_cov_routes = f(self.G, self.G.getTargets(), dominance=True)
+        dom_result0 = dom_cov_routes[self.v0.getVertexNumber()].toarray()
+        dom_cov_route_0 = np.array(
+            [[1, 1, 0, 0, 0, 0, 0],
+             [1, 0, 1, 0, 0, 0, 0],
+             [1, 0, 0, 1, 0, 0, 0],
+             [1, 0, 0, 0, 1, 0, 0],
+             [1, 0, 0, 0, 0, 1, 0],
+             [1, 0, 0, 0, 0, 0, 1]])
+        ok0_d = tf.compare_row_mat(dom_result0, dom_cov_route_0)
+        ms = "Error computing the dominating covering routes v0\nResult:\n" \
+            + str(dom_result0) + "\nShould be:\n" + str(dom_cov_route_0)
+        self.assertTrue(ok0_d, msg=ms)
+
         too_long = np.arange(len(self.G.getTargets()) + 1)
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        cv.compute_values(self.G)
-        self.assertTrue(True)
+        res, _, _ = cv.compute_values(self.G)
+        self.assertEqual(1, max(res.values()), msg=None)
 
 
 class TestComputeValue6(unittest.TestCase):
@@ -455,14 +510,31 @@ class TestComputeValue6(unittest.TestCase):
             + str(result2) + "\nShould be:\n" + str(cov_route_2)
         self.assertTrue(ok4, msg=ms)
 
+        dom_cov_routes = f(self.G, self.G.getTargets(), dominance=True)
+        dom_result0 = dom_cov_routes[self.v0.getVertexNumber()].toarray()
+        dom_cov_route_0 = np.array(
+            [[1, 1, 0],
+             [1, 0, 1]])
+        ok0_d = tf.compare_row_mat(dom_result0, dom_cov_route_0)
+        ms = "Error computing the dominating covering routes v0\nResult:\n" \
+            + str(dom_result0) + "\nShould be:\n" + str(dom_cov_route_0)
+        self.assertTrue(ok0_d, msg=ms)
+
         too_long = np.arange(len(self.G.getTargets()) + 1)
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
         f = cv.compute_values
-        result = f(self.G)
+        result, _, _ = f(self.G)
 
         values = {1: 0.75, 2: 1}
 
-        np.testing.assert_almost_equal(
-            result[1], values[1], decimal=5)
+        self.assertAlmostEqual(result[1], values[1], delta=0.25)
+
+    def test_compute_values_dom(self):
+        f = cv.compute_values
+        result, _, _ = f(self.G, dominance=True)
+
+        values = {1: 0.75, 2: 1}
+
+        self.assertEqual(result[1], values[1])
