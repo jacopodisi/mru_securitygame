@@ -185,19 +185,31 @@ class Graph(object):
 # it returns
 #  the adjacency matrix M
 #  niter is the maximum number of iteration to find a connected graph (default 100)
+#  density if True tell that the variable p, instead of indicating the probability, indicate the number of edges (as a density)
 #==============================================================================
-def generateRandMatrix(n, p, niter=100):
+def generateRandMatrix(n, p, niter=100, density=False):
+    assert p > 0
+    assert p <= 1
     for _ in range(niter):
         l = 0;
-        M = np.zeros(shape=(n, n), dtype=np.uint8);
-        for i in range(n):
-            M[i][i] = 1;
-        for i in range(n):
-            for j in range(l):
-                if np.random.rand() <= p:
-                    M[i][j] = 1;
-                    M[j][i] = 1;
-            l += 1;
+        M = np.eye(n, dtype=np.uint8);
+        if not density:
+            for i in range(n):
+                for j in range(l):
+                    if np.random.rand() <= p:
+                        M[i][j] = 1;
+                        M[j][i] = 1;
+                l += 1;
+        else:
+            tot_edges = (n * n - n)/2
+            for i in range(int(tot_edges * p)):
+                while True:
+                    x = np.random.randint(n)
+                    y = np.random.randint(n)
+                    if M[x, y] != 1:
+                        M[x, y] = 1
+                        M[y, x] = 1
+                        break
         connected = sparse.csgraph.connected_components(
             M, directed=False, return_labels=False) == 1
         if connected:
