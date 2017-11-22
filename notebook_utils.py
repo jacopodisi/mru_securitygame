@@ -56,8 +56,11 @@ def compute_nx_graph(graph):
     return gr, pos
 
 
-def plot_values(values):
+def plot_values(values, x_label='', y_label=''):
     val = sorted(values.items())
     x, y = zip(*val)
+
     plt.plot(x, y)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
     plt.show()
