@@ -6,13 +6,14 @@ from srg import computecovsets as cs
 from srg import graph as gr
 from patrolling.correlated import correlated_row_gen as cr
 import ILP_solver as sc
+import tqdm
 
 
 mtype = np.uint8
 
 
 # @profile
-def compute_values(graph, test=False, plot=False, dominance=False):
+def compute_values(graph, dominance=False):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
     Parameters
@@ -113,7 +114,8 @@ def compute_covering_routes(graph_game, targets, dominance=False):
                          'are not tartgets of the graph_game')
     n_vertices = len(graph_game.getVertices())
     csr_matrices = {}
-    for v in range(n_vertices):
+    t_range = tqdm.trange(n_vertices)
+    for v in t_range:
         covset = cs.computeCovSet(graph_game, v, targets)
         covset_matrix = np.zeros((len(covset), n_vertices), dtype=mtype)
 
@@ -138,11 +140,20 @@ def compute_covering_routes(graph_game, targets, dominance=False):
 
 
 if __name__ == '__main__':
-    # import iomanager as io
-    mat = gr.generateRandMatrix(10, 0.5)
-    # print mat
-    graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 0, 3)
-    res = compute_values(graph, dominance=True)
-    # io.save_results(v, filename="re.pickle")
-    # res = io.load_results("re.pickle")
+    import iomanager as io
+    dominance = False
+    # mat = gr.generateRandMatrix(16, 0.25, density=True)
+    # graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 4, 4)
+    file_gr = "graph_n16_d0.25_dead4"
+    # io.save_results(graph, filename=file_gr)
+    graph = io.load_results(file_gr)
+
+    res = compute_values(graph, dominance=dominance)
+
     print res
+    file_res = ''
+    if dominance:
+        file_res = "results_" + file_gr + "vps_dom"
+    else:
+        file_res = "results_" + file_gr + "vps"
+    io.save_results(res, filename=file_res)
