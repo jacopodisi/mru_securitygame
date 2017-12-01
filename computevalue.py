@@ -141,12 +141,13 @@ def compute_covering_routes(graph_game, targets, dominance=False):
 
 if __name__ == '__main__':
     import iomanager as io
-    dominance = False
-    # mat = gr.generateRandMatrix(16, 0.25, density=True)
-    # graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 4, 4)
-    file_gr = "graph_n16_d0.25_dead4"
+    import sys
+    dominance = True
+    mat = gr.generateRandMatrix(int(sys.argv[1]), 0.25, density=True)
+    graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 4, 4)
+    file_gr = "graph_n" + str(sys.argv[1]) + "_d0.25_dead4"
     # io.save_results(graph, filename=file_gr)
-    graph = io.load_results(file_gr)
+    # graph = io.load_results(file_gr)
 
     res = compute_values(graph, dominance=dominance)
 
