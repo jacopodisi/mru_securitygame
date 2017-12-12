@@ -69,7 +69,7 @@ def maximum_resources(csr_matrices, targets):
     csr_matrices: dictionary of type {"vertex_number1": csr_matrix1,
                                       "vertex_number2": csr_matrix2, ...}
                   csr_matrix represent the covering sets of the vertex
-    targets: list of targets for which compute the covering routes
+    targets: list of targets
 
     Return
     ------

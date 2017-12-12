@@ -202,6 +202,8 @@ def generateRandMatrix(n, p, niter=100, density=False):
                 l += 1;
         else:
             tot_edges = (n * n - n)/2
+            if (tot_edges * p) < (n - 1):
+                raise ValueError('Impossible to create a connected graph, too few edges')
             for i in range(int(tot_edges * p)):
                 while True:
                     x = np.random.randint(n)
@@ -214,7 +216,7 @@ def generateRandMatrix(n, p, niter=100, density=False):
             M, directed=False, return_labels=False) == 1
         if connected:
             return M;
-    raise ValueError('unable to create a connected graph. Modify parameters.')
+    raise ValueError('Unable to create a connected graph.')
     
 #==============================================================================
 # function that creates a graph that is composed by n vertices whose values is between (0,1] 

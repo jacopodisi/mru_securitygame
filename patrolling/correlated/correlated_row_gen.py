@@ -20,7 +20,7 @@ from oracle import ilp_oracle
 ##################################################################################################
 
 # threshold on the min. improvement to decide when to terminate row generation
-EPS=0.00001
+EPS=0.0000
 TIME_LIMIT=3600
 
 @contextmanager
