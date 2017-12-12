@@ -4,7 +4,7 @@ import iomanager as io
 
 
 if True:
-    nodes = [30]
+    nodes = [7, 8, 9, 10, 11, 12]
     densities = [0.15]
     dominance = False
     values = {}

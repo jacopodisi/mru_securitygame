@@ -1,15 +1,17 @@
+"""Compute values module
+"""
 # -*- coding: utf-8 -*-
-
-import numpy as np
-from scipy import sparse
+import ILP_solver as sc
 from srg import computecovsets as cs
 from srg import graph as gr
 from patrolling.correlated import correlated_row_gen as cr
-import ILP_solver as sc
+
+from scipy import sparse
+import numpy as np
 import tqdm
 
 
-mtype = np.uint8
+MTYPE = np.uint8
 
 
 # @profile
@@ -41,17 +43,17 @@ def compute_values(graph, dominance=False):
     placements = {}
 
     placements[len(min_res)] = min_res
-    game_values[len(min_res)], strategies[len(min_res)], _ = cr.correlated(temp_dict, tgt_values)
+    game_values[len(min_res)], strategies[len(min_res)], _ = cr.correlated(
+        temp_dict, tgt_values)
     for i in range(len(min_res) + 1, len(max_res)):
         res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i)
         temp_dict = {k + 1: csr[res[k]] for k in range(len(res))}
         placements[i] = res
         game_values[i], strategies[i], _ = cr.correlated(temp_dict, tgt_values)
-    
-    temp_dict = {k + 1: csr[max_res[k]] for k in range(len(max_res))}
+
     placements[len(max_res)] = max_res
     game_values[len(max_res)] = 1
-    strategies[len(max_res)] = 0
+    strategies[len(max_res)] = 0  # TODO
 
     return game_values, placements, strategies
 
@@ -82,10 +84,10 @@ def compute_shortest_sets(graph_game, targets):
     deadlines = {t: graph_game.getVertex(t).deadline for t in targets}
     shortest_paths = sparse.csgraph.shortest_path(
         matrix, directed=False, unweighted=True)
-    shortest_matrix = np.zeros(shape=matrix.shape, dtype=mtype)
+    shortest_matrix = np.zeros(shape=matrix.shape, dtype=MTYPE)
     for tgt, dl in deadlines.iteritems():
-        ok = shortest_paths[:, tgt] <= dl
-        shortest_matrix[ok, tgt] = 1
+        covered = shortest_paths[:, tgt] <= dl
+        shortest_matrix[covered, tgt] = 1
     return shortest_matrix
 
 
@@ -115,46 +117,49 @@ def compute_covering_routes(graph_game, targets, dominance=False):
     n_vertices = len(graph_game.getVertices())
     csr_matrices = {}
     t_range = tqdm.trange(n_vertices)
-    for v in t_range:
-        covset = cs.computeCovSet(graph_game, v, targets)
-        covset_matrix = np.zeros((len(covset), n_vertices), dtype=mtype)
+    for ver in t_range:
+        covset = cs.computeCovSet(graph_game, ver, targets)
+        covset_matrix = np.zeros((len(covset), n_vertices), dtype=MTYPE)
 
+        l_covset = len(covset)
         if dominance:
-            for route in range(len(covset)):
+            for route in range(l_covset):
                 covset_matrix[route, covset[route][0]] = 1
             covset_matrix = np.unique(covset_matrix, axis=0)
             for route in range(covset_matrix.shape[0]):
-                a = covset_matrix[route] <= covset_matrix
-                dom = np.all(a, axis=1)
+                dom_rows = covset_matrix[route] <= covset_matrix
+                dom = np.all(dom_rows, axis=1)
                 dom[route] = False
                 if np.any(dom):
                     covset_matrix[route] = 0
             covset_matrix = covset_matrix[~np.all(
                 covset_matrix == 0, axis=1)]
         else:
-            for route in range(len(covset)):
+            for route in range(l_covset):
                 covset_matrix[route, covset[route][0]] = 1
 
-        csr_matrices[v] = sparse.csr_matrix(covset_matrix)
+        csr_matrices[ver] = sparse.csr_matrix(covset_matrix)
     return csr_matrices
 
 
 if __name__ == '__main__':
-    import iomanager as io
-    import sys
-    dominance = True
-    mat = gr.generateRandMatrix(int(sys.argv[1]), 0.25, density=True)
-    graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 4, 4)
-    file_gr = "graph_n" + str(sys.argv[1]) + "_d0.25_dead4"
+    # import code.iomanager as io
+    domopt = True
+    nodes = 10
+    mat = gr.generateRandMatrix(nodes, 0.25, density=True)
+    rand_graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 4, 4)
+    file_gr = "graph_n" + str(nodes) + "_d0.25_dead4"
     # io.save_results(graph, filename=file_gr)
     # graph = io.load_results(file_gr)
 
-    res = compute_values(graph, dominance=dominance)
+    result = compute_values(rand_graph, dominance=domopt)
 
-    print res
+    print "game values: " + str(result[0])
+    print "placements: " + str(result[1])
+    print "strategies: " + str(result[2])
     file_res = ''
-    if dominance:
+    if domopt:
         file_res = "results_" + file_gr + "vps_dom"
     else:
         file_res = "results_" + file_gr + "vps"
-    io.save_results(res, filename=file_res)
+    # io.save_results(result, filename=file_res)
