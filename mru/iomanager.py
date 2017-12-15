@@ -103,9 +103,6 @@ def save_results(graph_path, result):
     ------
     fn: complete file path ./file/....pickle
     """
-    if not os.path.isfile(graph_path):
-        raise IOError('wrong graph path specified for saving the result')
-
     ntgts = re.search('ntgts_([0-9]+?)_', graph_path).group(1)
     den = re.search('den_([0-9]+?)_', graph_path).group(1)
     dead = re.search('dead_([0-9]+?)_', graph_path).group(1)
@@ -117,5 +114,8 @@ def save_results(graph_path, result):
                + str(dead) + "_graphix_" + str(index)
     fn = save(result, dirname + filename)
     logging.info('iomanager: saved results in ' + fn)
+
+    if not os.path.isfile(FILEDIR + "graphs/" + graph_path + ".pickle"):
+        logging.warn('wrong graph path specified for saving the result')
 
     return fn
