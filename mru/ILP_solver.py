@@ -4,7 +4,11 @@ import gurobipy as gu
 import numpy as np
 
 
-def set_cover_solver(sets, k=None):
+VMAT = np.uint16
+RMAT = np.uint32
+
+
+def set_cover_solver(sets, k=None, nsol=1):
     """ solve the linear integer programming problem using gurobi solver
     Parameters
     ----------
@@ -18,7 +22,18 @@ def set_cover_solver(sets, k=None):
     try:
 
         m = gu.Model("setcover")
-        m.setParam('OutputFlag', False)
+        m.setParam(gu.GRB.Param.OutputFlag, 0)
+        # find solutions that are the best
+        m.setParam(gu.GRB.Param.PoolSearchMode, 2)
+        # Limit how many solutions to collect
+        m.setParam(gu.GRB.Param.PoolSolutions, nsol)
+        # Limit the search space by setting a gap
+        # for the worst possible solution that will be accepted
+        m.setParam(gu.GRB.Param.PoolGap, 0)
+        # remove presolve operation
+        m.setParam(gu.GRB.Param.Presolve, 0)
+        # set num threads
+        m.setParam(gu.GRB.Param.Threads, 1)
 
         universe = sets.shape[1]
         nsets = sets.shape[0]
@@ -47,11 +62,23 @@ def set_cover_solver(sets, k=None):
 
         m.optimize()
 
-        m.write('set_cover.lp')
+        if k is None:
+            obj = int(m.ObjVal)
+        else:
+            obj = k
 
-        variables = m.getAttr('x', variables)
+        solutions = np.zeros((m.SolCount, obj), dtype=RMAT)
 
-        return np.nonzero(variables)[0]
+        for e in range(solutions.shape[0]):
+            m.setParam(gu.GRB.Param.SolutionNumber, e)
+            i = 0
+            for iset, v in enumerate(m.getVars()):
+                if int(v.Xn):
+                    solutions[e, i] = iset
+                    i += 1
+
+
+        return solutions
 
     except gu.GurobiError:
         stat = m.getAttr(gu.GRB.Attr.Status)
@@ -82,17 +109,17 @@ def maximum_resources(csr_matrices, targets):
         raise ValueError('Targets in input of maximum_resources function'
                          'are not tartgets of the csr_matrices')
     mat = np.array([], dtype=np.uint8).reshape((0, tot_tgts))
-    vertex_list = np.array([], dtype=np.uint16)
-    covset_list = np.array([], dtype=np.uint16)
+    vertex_list = np.array([], dtype=VMAT)
+    covset_list = np.array([], dtype=RMAT)
     for v in csr_matrices:
         arr = csr_matrices[v].toarray()
         mat = np.vstack((mat, arr))
-        t_veli = np.full(shape=(arr.shape[0]), fill_value=v, dtype=np.uint16)
+        t_veli = np.full(shape=(arr.shape[0]), fill_value=v, dtype=VMAT)
         vertex_list = np.append(vertex_list, t_veli)
-        t_covli = np.arange(arr.shape[0], dtype=np.uint16)
+        t_covli = np.arange(arr.shape[0], dtype=RMAT)
         covset_list = np.append(covset_list, t_covli)
-    mat_ix = set_cover_solver(mat[:, targets])
-    return [(vertex_list[ix], covset_list[ix]) for ix in mat_ix]
+    mat_ix = set_cover_solver(mat[:, targets])[0]
+    return zip(vertex_list[mat_ix], covset_list[mat_ix])
 
 
 def local_search(matrix, deadlines, number_of_resources):
@@ -115,10 +142,12 @@ def local_search(matrix, deadlines, number_of_resources):
 
 
 if __name__ == '__main__':
-    randmat = np.random.randint(2, size=(50, 10), dtype=np.uint8)
-    success, min0 = set_cover_solver(randmat)
-    if not success:
-        exit()
-    success, min1 = set_cover_solver(randmat, k=(len(min0) + 1))
-    if len(min1) != (len(min0) + 1):
-        print 'Error in lengths' + min0 + min1
+    mat = [[1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+           [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+           [1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]]
+    mat = np.array(mat)
+    min0 = set_cover_solver(mat, nsol=6)
+    min1 = set_cover_solver(mat, k=(len(min0) + 1), nsol=6)
+    print min0
+    print min1
