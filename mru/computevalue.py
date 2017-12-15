@@ -40,6 +40,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
         strategies = {}
         placements = {}
         solutionlist = []
+        max_res_strategy = None
         comp_time = -1
 
         shortest_matrix = compute_shortest_sets(graph, tgts)
@@ -95,12 +96,13 @@ def compute_values(graph, rm_dominated=False, enum=1):
                 strategies[sol[2].shape[0]] = sol[1]
                 placements[sol[2].shape[0]] = [
                     (r + 1, p) for r, p in enumerate(sol[2])]
-        placements[max_num_res] = [
-            (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
-        game_values[max_num_res] = 1
-        strategies[max_num_res] = [(
-            [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
-            1.0)]
+        if max_res_strategy is not None:
+            placements[max_num_res] = [
+                (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
+            game_values[max_num_res] = 1
+            strategies[max_num_res] = [(
+                [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
+                1.0)]
 
         return game_values, placements, strategies, comp_time
 
