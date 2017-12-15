@@ -1,6 +1,6 @@
 import unittest
-from mru import computevalue as cv
-from mru.srg import graph as gr
+from .. import computevalue as cv
+from ..srg import graph as gr
 import numpy as np
 import testfunctions as tf
 
@@ -104,7 +104,7 @@ class TestComputeValue1(unittest.TestCase):
         game_val, plac, strat, _ = cv.compute_values(self.G, True)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
         res_game_val = {1: 1}
-        res_plac = {1: [(1, 1)]}
+        res_plac = {1: [(1, 4)]}
         res_strat = {1: [([(1, 0)], 1.0)]}
         self.assertEqual(game_val, res_game_val, msg=ms)
         self.assertEqual(plac, res_plac, msg=ms)
@@ -367,15 +367,16 @@ class TestComputeValue4(unittest.TestCase):
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        game_val, plac, strat, _ = cv.compute_values(self.G, True)
+        game_val, plac, strat, _ = cv.compute_values(self.G, True, enum=10)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
         res_game_val = {1: 0.75, 2: 1}
-        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
+        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 4)]}
         res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
-                     2: [([(1, 0), (2, 1)], 1.0)]}
-        self.assertEqual(game_val[2], res_game_val[2], msg=ms)
-        self.assertEqual(plac[2], res_plac[2], msg=ms)
-        self.assertEqual(strat[2], res_strat[2], msg=ms)
+                     2: [([(1, 1), (2, 0)], 1.0)]}
+        self.assertEqual(game_val, res_game_val, msg=ms)
+        self.assertEqual(plac, res_plac, msg=ms)
+        self.assertItemsEqual(strat[1], res_strat[1], msg=ms)
+        self.assertItemsEqual(strat[2], res_strat[2], msg=ms)
 
 
 class TestComputeValue5(unittest.TestCase):
@@ -473,15 +474,15 @@ class TestComputeValue5(unittest.TestCase):
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        game_val, plac, strat, _ = cv.compute_values(self.G, True)
+        game_val, plac, strat, _ = cv.compute_values(self.G, True, enum=10)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
-        res_game_val = {1: 0.5, 2: 0.5, 3: 1}
-        res_plac = {1: [(1, 6)], 2: [(1, 0), (2, 1)],
-                    3: [(1, 2), (2, 3), (3, 4)]}
+        res_game_val = {1: 0.5, 2: 0.75, 3: 1}
+        res_plac = {1: [(1, 6)], 2: [(1, 1), (2, 2)],
+                    3: [(1, 1), (2, 2), (3, 3)]}
         res_strat = {1: [([(1, 0)], 1.0)],
                      2: [([(1, 1), (2, 2)], 1.0)],
-                     3: [([(1, 0), (2, 1), (3, 4)], 1.0)]}
-        self.assertEqual(game_val, res_game_val, msg=ms)
+                     3: [([(1, 1), (2, 2), (3, 0)], 1.0)]}
+        self.assertEqual(game_val[3], res_game_val[3], msg=ms)
         self.assertEqual(plac[1], res_plac[1], msg=ms)
         self.assertEqual(plac[3], res_plac[3], msg=ms)
         self.assertEqual(strat[3], res_strat[3], msg=ms)
@@ -563,9 +564,9 @@ class TestComputeValue6(unittest.TestCase):
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
 
         res_game_val = {1: 0.75, 2: 1}
-        res_plac = {1: [(1, 2)], 2: [(1, 0), (2, 2)]}
+        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
         res_strat = {1: [([(1, 2)], 0.5), ([(1, 1)], 0.5)],
-                     2: [([(1, 2), (2, 2)], 1.0)]}
+                     2: [([(1, 1), (2, 2)], 1.0)]}
 
         self.assertEqual(game_val[2], res_game_val[2], msg=ms)
         self.assertEqual(plac, res_plac, msg=ms)
@@ -575,9 +576,9 @@ class TestComputeValue6(unittest.TestCase):
         game_val, plac, strat, _ = cv.compute_values(self.G, True)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
         res_game_val = {1: 0.75, 2: 1}
-        res_plac = {1: [(1, 2)], 2: [(1, 1), (2, 2)]}
+        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
         res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
-                     2: [([(1, 1), (2, 0)], 1.0)]}
+                     2: [([(1, 0), (2, 1)], 1.0)]}
         self.assertEqual(game_val[2], res_game_val[2], msg=ms)
         self.assertEqual(plac[2], res_plac[2], msg=ms)
         self.assertEqual(strat[2], res_strat[2], msg=ms)
