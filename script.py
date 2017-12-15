@@ -29,16 +29,16 @@ def main():
         elif opt in ('-i', '--graphid'):
             ix = arg
 
-    graph_path = "graphs/graphs_" + ntgts + "_ntgts/instance_ntgts_"\
+    graph_path = "graphs_" + ntgts + "_ntgts/instance_ntgts_"\
                  + ntgts + "_den_" + den + "_dead_" + dead + "_ix_" + ix
 
-    if not os.path.isfile("./file/" + graph_path + ".pickle"):
-        m = 'graph {} do not exist'.format("./file/" + graph_path + ".pickle")
+    if not os.path.isfile("./file/graphs/" + graph_path + ".pickle"):
+        m = 'graph {} do not exist'.format("./file/graphs/" + graph_path + ".pickle")
         raise IOError(m)
-    with open("./file/" + graph_path + ".pickle", mode='r') as f:
+    with open("./file/graphs/" + graph_path + ".pickle", mode='r') as f:
         graph = pickle.load(f)
 
-    with cr.time_limit(3600):
+    with cr.time_limit(60):
         result = cv.compute_values(graph, rm_dominated=True, enum=10)
 
     print result
