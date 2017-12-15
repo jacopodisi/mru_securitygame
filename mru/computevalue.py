@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import time
-import tqdm
 import numpy as np
 import ILP_solver as sc
 
@@ -162,8 +161,7 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False):
                          'are not tartgets of the graph_game')
     n_vertices = len(graph_game.getVertices())
     csr_matrices = {}
-    t_range = tqdm.trange(n_vertices)
-    for ver in t_range:
+    for ver in range(n_vertices):
         covset = cs.computeCovSet(graph_game, ver, targets)
         covset_matrix = np.zeros((len(covset), n_vertices), dtype=MTYPE)
 

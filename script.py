@@ -7,7 +7,7 @@ import pickle
 
 from mru import computevalue as cv
 from mru import iomanager as io
-from mru.patrolling import correlated as cr
+from mru.patrolling.correlated import correlated_row_gen as cr
 
 
 def main():
@@ -24,23 +24,24 @@ def main():
             den = arg
         elif opt in ('-t', '--target'):
             ntgts = arg
-        elif opt == ('-D', '--deadline'):
+        elif opt in ('-D', '--deadline'):
             dead = arg
-        elif opt == ('-i', '--graphid'):
+        elif opt in ('-i', '--graphid'):
             ix = arg
 
     graph_path = "graphs/graphs_" + ntgts + "_ntgts/instance_ntgts_"\
                  + ntgts + "_den_" + den + "_dead_" + dead + "_ix_" + ix
-    graph_path += ".pickle"
 
     if not os.path.isfile("./file/" + graph_path + ".pickle"):
-        m = 'graph {} do not exist'.format(graph_path)
+        m = 'graph {} do not exist'.format("./file/" + graph_path + ".pickle")
         raise IOError(m)
     with open("./file/" + graph_path + ".pickle", mode='r') as f:
         graph = pickle.load(f)
 
-    with cr.time_limit(36):
-        result = cv.compute_values(graph, rm_dominated=True, nsol=10)
+    with cr.time_limit(3600):
+        result = cv.compute_values(graph, rm_dominated=True, enum=10)
+
+    print result
 
     io.save_results(graph_path, result)
 
