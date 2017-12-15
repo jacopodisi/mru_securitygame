@@ -13,7 +13,7 @@ FILEDIR = "file/"
 
 
 def save(res, filename=""):
-    """ save the results in a pickle file in ./results folder
+    """ save the results in a pickle file in FILEDIR folder
     Parameters
     ----------
     res: results to be saved
@@ -23,7 +23,7 @@ def save(res, filename=""):
     if not os.path.exists(FILEDIR):
         os.makedirs(FILEDIR)
     if filename == "":
-        filename = "res"
+        filename = "file"
     filename = FILEDIR + filename
     fileid = 0
     while True:
