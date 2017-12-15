@@ -14,13 +14,14 @@ from patrolling.correlated import correlated_row_gen as cr
 MTYPE = np.uint8
 
 
-# @profile
-def compute_values(graph, dominance=False):
+def compute_values(graph, rm_dominated=False, enum=1):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
     Parameters
     ----------
     graph: instance of gr.Graph class
+    rm_dominated: If set to True the dominanted route for each vertex
+                  are eliminated
 
     Return
     ------
@@ -40,14 +41,20 @@ def compute_values(graph, dominance=False):
     placements = {}
 
     shortest_matrix = compute_shortest_sets(graph, tgts)
-    csr = compute_covering_routes(graph, tgts, dominance=dominance)
+    csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
 
     # minimum resource game solution
-    min_res = sc.set_cover_solver(shortest_matrix[:, tgts])
-    temp_dict = {k + 1: csr[min_res[k]] for k in range(len(min_res))}
-    placements[len(min_res)] = [(re + 1, pl) for re, pl in enumerate(min_res)]
-    game_values[len(min_res)], strategies[len(min_res)], _ = cr.correlated(
-        temp_dict, tgt_values)
+    min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
+    min_n_res = min_res.shape[1]
+    best_sol = (0, 0, 0)
+    for sol in range(min_res.shape[0]):
+        road_dict = {k + 1: csr[min_res[sol, k]] for k in range(min_n_res)}
+        solution = cr.correlated(road_dict, tgt_values)
+        if best_sol[0] < solution[0]:
+            best_sol = (solution[0], solution[1], min_res[sol])
+    game_values[min_n_res] = best_sol[0]
+    strategies[min_n_res] = best_sol[1]
+    placements[min_n_res] = [(r + 1, p) for r, p in enumerate(best_sol[2])]
 
     # optimum resource game solution
     max_res_strategy = sc.maximum_resources(csr, tgts)
@@ -60,17 +67,22 @@ def compute_values(graph, dominance=False):
         1.0)]
 
     # what happen between
-    for i in range(len(min_res) + 1, max_num_res):
-        res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i)
-        temp_dict = {k + 1: csr[res[k]] for k in range(len(res))}
-        placements[i] = [(re + 1, pl) for re, pl in enumerate(res)]
-        game_values[i], strategies[i], _ = cr.correlated(temp_dict, tgt_values)
+    for i in range(min_res.shape[1] + 1, max_num_res):
+        res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i, nsol=enum)
+        best_sol = (0, 0, 0)
+        for sol in range(res.shape[0]):
+            road_dict = {k + 1: csr[res[sol, k]] for k in range(res.shape[1])}
+            solution = cr.correlated(road_dict, tgt_values)
+            if best_sol[0] < solution[0]:
+                best_sol = (solution[0], solution[1], res[sol])
+        game_values[i] = best_sol[0]
+        strategies[i] = best_sol[1]
+        placements[i] = [(r + 1, p) for r, p in enumerate(best_sol[2])]
 
     comp_time = time.time() - start_time
     return game_values, placements, strategies, comp_time
 
 
-# @profile
 def compute_shortest_sets(graph_game, targets):
     """ Compute a list of array containing the reachable
         target from each vetrex. Column corresponding to non-targets
@@ -103,8 +115,7 @@ def compute_shortest_sets(graph_game, targets):
     return shortest_matrix
 
 
-# @profile
-def compute_covering_routes(graph_game, targets, dominance=False):
+def compute_covering_routes(graph_game, targets, rm_dominated=False):
     """ compute all the covering routes, from each vertex, for the given
         set of targets. The covering routes will contain always the starting
         vertex, wheteher it is a target or not. Other non-target vertex will
@@ -113,8 +124,8 @@ def compute_covering_routes(graph_game, targets, dominance=False):
     ----------
     graph_game: instance of Graph class representing the game
     targets: list of targets for which compute the covering routes
-    dominance: If set to True the dominanted route for each vertex
-               are eliminated
+    rm_dominated: If set to True the dominanted route for each vertex
+                  are eliminated
 
     Return
     ------
@@ -134,7 +145,7 @@ def compute_covering_routes(graph_game, targets, dominance=False):
         covset_matrix = np.zeros((len(covset), n_vertices), dtype=MTYPE)
 
         l_covset = len(covset)
-        if dominance:
+        if rm_dominated:
             for route in range(l_covset):
                 covset_matrix[route, covset[route][0]] = 1
             covset_matrix = np.unique(covset_matrix, axis=0)
@@ -155,16 +166,16 @@ def compute_covering_routes(graph_game, targets, dominance=False):
 
 
 if __name__ == '__main__':
-    # import code.iomanager as io
+    import iomanager as io
     domopt = True
     nodes = 10
-    mat = gr.generateRandMatrix(nodes, 0.25, density=True)
-    rand_graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 4, 4)
-    file_gr = "graph_n" + str(nodes) + "_d0.25_dead4"
-    # io.save_results(graph, filename=file_gr)
-    # graph = io.load_results(file_gr)
+    # mat = gr.generateRandMatrix(nodes, 0.25, density=True)
+    # rand_graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 4, 4)
+    file_gr = "graph_n" + str(nodes) + "_d0.25_dead4_ix_1"
+    # io.save(rand_graph, filename=file_gr)
+    rand_graph = io.load(io.FILEDIR + file_gr + ".pickle")
 
-    result = compute_values(rand_graph, dominance=domopt)
+    result = compute_values(rand_graph, rm_dominated=domopt, enum=10)
 
     print "game values: " + str(result[0])
     print "placements: " + str(result[1])
