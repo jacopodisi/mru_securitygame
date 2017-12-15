@@ -62,9 +62,12 @@ def set_cover_solver(sets, k=None, nsol=1):
 
         m.optimize()
 
-        if k is None:
+        try:
             obj = int(m.ObjVal)
-        else:
+        except AttributeError:
+            raise gu.GurobiError("GurobiError", 3)
+
+        if k is not None:
             obj = k
 
         solutions = np.zeros((m.SolCount, obj), dtype=RMAT)
@@ -143,11 +146,11 @@ def local_search(matrix, deadlines, number_of_resources):
 
 if __name__ == '__main__':
     mat = [[1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-           [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-           [1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+           [0, 1, 0, 1, 0, 1, 0, 1, 0, 0],
+           [1, 1, 1, 1, 1, 0, 0, 0, 0, 1],
            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]]
     mat = np.array(mat)
     min0 = set_cover_solver(mat, nsol=6)
-    min1 = set_cover_solver(mat, k=(len(min0) + 1), nsol=6)
+    # min1 = set_cover_solver(mat, k=(len(min0) + 1), nsol=6)
     print min0
-    print min1
+    # print min1
