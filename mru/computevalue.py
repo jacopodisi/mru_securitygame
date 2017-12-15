@@ -32,55 +32,61 @@ def compute_values(graph, rm_dominated=False, enum=1):
                                     [([(res, routeid), ..], prob), ...]}
     comp_time: time spent for the computation
     """
-    start_time = time.time()
-    tgts = graph.getTargets()
-    tgt_values = np.array([v.value for v in graph.vertices])
+    try:
+        start_time = time.time()
+        tgts = graph.getTargets()
+        tgt_values = np.array([v.value for v in graph.vertices])
 
-    game_values = {}
-    strategies = {}
-    placements = {}
+        game_values = {}
+        strategies = {}
+        placements = {}
+        comp_time = -1
 
-    shortest_matrix = compute_shortest_sets(graph, tgts)
-    csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
+        shortest_matrix = compute_shortest_sets(graph, tgts)
+        csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
 
-    # minimum resource game solution
-    min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
-    min_n_res = min_res.shape[1]
-    best_sol = (0, 0, 0)
-    for sol in range(min_res.shape[0]):
-        road_dict = {k + 1: csr[min_res[sol, k]] for k in range(min_n_res)}
-        solution = cr.correlated(road_dict, tgt_values)
-        if best_sol[0] < solution[0]:
-            best_sol = (solution[0], solution[1], min_res[sol])
-    game_values[min_n_res] = best_sol[0]
-    strategies[min_n_res] = best_sol[1]
-    placements[min_n_res] = [(r + 1, p) for r, p in enumerate(best_sol[2])]
-
-    # optimum resource game solution
-    max_res_strategy = sc.maximum_resources(csr, tgts)
-    max_num_res = len(max_res_strategy)
-    placements[max_num_res] = [
-        (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
-    game_values[max_num_res] = 1
-    strategies[max_num_res] = [(
-        [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
-        1.0)]
-
-    # what happen between
-    for i in range(min_res.shape[1] + 1, max_num_res):
-        res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i, nsol=enum)
+        # minimum resource game solution
+        min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
+        min_n_res = min_res.shape[1]
         best_sol = (0, 0, 0)
-        for sol in range(res.shape[0]):
-            road_dict = {k + 1: csr[res[sol, k]] for k in range(res.shape[1])}
+        for sol in range(min_res.shape[0]):
+            road_dict = {k + 1: csr[min_res[sol, k]] for k in range(min_n_res)}
             solution = cr.correlated(road_dict, tgt_values)
             if best_sol[0] < solution[0]:
-                best_sol = (solution[0], solution[1], res[sol])
-        game_values[i] = best_sol[0]
-        strategies[i] = best_sol[1]
-        placements[i] = [(r + 1, p) for r, p in enumerate(best_sol[2])]
+                best_sol = (solution[0], solution[1], min_res[sol])
+        game_values[min_n_res] = best_sol[0]
+        strategies[min_n_res] = best_sol[1]
+        placements[min_n_res] = [(r + 1, p) for r, p in enumerate(best_sol[2])]
 
-    comp_time = time.time() - start_time
-    return game_values, placements, strategies, comp_time
+        # optimum resource game solution
+        max_res_strategy = sc.maximum_resources(csr, tgts)
+        max_num_res = len(max_res_strategy)
+        placements[max_num_res] = [
+            (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
+        game_values[max_num_res] = 1
+        strategies[max_num_res] = [(
+            [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
+            1.0)]
+
+        # what happen between
+        for i in range(min_res.shape[1] + 1, max_num_res):
+            res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i, nsol=enum)
+            best_sol = (0, 0, 0)
+            for sol in range(res.shape[0]):
+                road_dict = {k + 1: csr[res[sol, k]]
+                             for k in range(res.shape[1])}
+                solution = cr.correlated(road_dict, tgt_values)
+                if best_sol[0] < solution[0]:
+                    best_sol = (solution[0], solution[1], res[sol])
+            game_values[i] = best_sol[0]
+            strategies[i] = best_sol[1]
+            placements[i] = [(r + 1, p) for r, p in enumerate(best_sol[2])]
+
+        comp_time = time.time() - start_time
+        return game_values, placements, strategies, comp_time
+
+    except cr.TimeoutException:
+        return game_values, placements, strategies, comp_time
 
 
 def compute_shortest_sets(graph_game, targets):
@@ -175,7 +181,8 @@ if __name__ == '__main__':
     # io.save(rand_graph, filename=file_gr)
     rand_graph = io.load(io.FILEDIR + file_gr + ".pickle")
 
-    result = compute_values(rand_graph, rm_dominated=domopt, enum=10)
+    with cr.time_limit(4):
+        result = compute_values(rand_graph, rm_dominated=domopt, enum=10)
 
     print "game values: " + str(result[0])
     print "placements: " + str(result[1])

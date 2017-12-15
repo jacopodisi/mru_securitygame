@@ -7,6 +7,7 @@ import pickle
 
 from mru import computevalue as cv
 from mru import iomanager as io
+from mru.patrolling import correlated as cr
 
 
 def main():
@@ -38,7 +39,8 @@ def main():
     with open("./file/" + graph_path + ".pickle", mode='r') as f:
         graph = pickle.load(f)
 
-    result = cv.compute_values(graph, dominance=True)
+    with cr.time_limit(36):
+        result = cv.compute_values(graph, rm_dominated=True, nsol=10)
 
     io.save_results(graph_path, result)
 
