@@ -1,4 +1,14 @@
 # -*- coding: utf-8 -*-
+"""Script to run the compute_value algorithm on pregenerated graphs.
+Given the parameters of the graph, apply to it the compute_value function with
+a predefined time limit and save the results in file (io.save_results function)
+Parameters
+----------
+-d, --density: density of edge of the graph
+-t, --target: number of targets/node of the graph
+-D, --deadline: deadline of the targets
+-i, --graphid: id of the graph
+"""
 
 import sys
 import getopt
@@ -40,8 +50,6 @@ def main():
 
     with cr.time_limit(60):
         result = cv.compute_values(graph, rm_dominated=True, enum=10)
-
-    print result
 
     io.save_results(graph_path, result)
 
