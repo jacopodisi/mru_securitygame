@@ -2,7 +2,7 @@ import unittest
 from .. import ILP_solver as ilp
 from scipy import sparse
 import numpy as np
-import gurobi as gb
+import gurobipy as gb
 
 
 class TestILPSolver1(unittest.TestCase):
