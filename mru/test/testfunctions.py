@@ -13,8 +13,9 @@ def compare_row_mat(x_mat, y_mat):
     boolean: True if the 2 matrices contains the same rows
              (also in different order), False otherwise
     """
-    x_temp = np.unique(x_mat, axis=0)
-    y_temp = np.unique(y_mat, axis=0)
+
+    x_temp = np.vstack({tuple(row) for row in x_mat})
+    y_temp = np.vstack({tuple(row) for row in y_mat})
     if x_temp.shape[0] != y_temp.shape[0]:
         return False
     for x in x_temp:
