@@ -372,7 +372,7 @@ class TestComputeValue4(unittest.TestCase):
         res_game_val = {1: 0.75, 2: 1}
         res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 4)]}
         res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
-                     2: [([(1, 1), (2, 0)], 1.0)]}
+                     2: [([(1, 0), (2, 0)], 1.0)]}
         self.assertEqual(game_val, res_game_val, msg=ms)
         self.assertEqual(plac, res_plac, msg=ms)
         self.assertItemsEqual(strat[1], res_strat[1], msg=ms)
@@ -481,7 +481,7 @@ class TestComputeValue5(unittest.TestCase):
                     3: [(1, 1), (2, 2), (3, 3)]}
         res_strat = {1: [([(1, 0)], 1.0)],
                      2: [([(1, 1), (2, 2)], 1.0)],
-                     3: [([(1, 1), (2, 2), (3, 0)], 1.0)]}
+                     3: [([(1, 3), (2, 1), (3, 1)], 1.0)]}
         self.assertEqual(game_val[3], res_game_val[3], msg=ms)
         self.assertEqual(plac[1], res_plac[1], msg=ms)
         self.assertEqual(plac[3], res_plac[3], msg=ms)
