@@ -171,7 +171,7 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False):
         if rm_dominated:
             for route in range(l_covset):
                 covset_matrix[route, covset[route][0]] = 1
-            covset_matrix = np.unique(covset_matrix, axis=0)
+            covset_matrix = np.vstack({tuple(row) for row in covset_matrix})
             for route in range(covset_matrix.shape[0]):
                 dom_rows = covset_matrix[route] <= covset_matrix
                 dom = np.all(dom_rows, axis=1)
