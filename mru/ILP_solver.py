@@ -23,8 +23,8 @@ def set_cover_solver(sets, k=None, nsol=1):
 
         m = gu.Model("setcover")
         m.setParam(gu.GRB.Param.OutputFlag, 0)
-        # find solutions that are the best
-        m.setParam(gu.GRB.Param.PoolSearchMode, 2)
+        # find solutions that are not the best
+        m.setParam(gu.GRB.Param.PoolSearchMode, 1)
         # Limit how many solutions to collect
         m.setParam(gu.GRB.Param.PoolSolutions, nsol)
         # Limit the search space by setting a gap
@@ -79,7 +79,6 @@ def set_cover_solver(sets, k=None, nsol=1):
                 if int(v.Xn):
                     solutions[e, i] = iset
                     i += 1
-
 
         return solutions
 
@@ -145,12 +144,12 @@ def local_search(matrix, deadlines, number_of_resources):
 
 
 if __name__ == '__main__':
-    mat = [[1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+    matri = [[1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
            [0, 1, 0, 1, 0, 1, 0, 1, 0, 0],
            [1, 1, 1, 1, 1, 0, 0, 0, 0, 1],
            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]]
-    mat = np.array(mat)
-    min0 = set_cover_solver(mat, nsol=6)
-    # min1 = set_cover_solver(mat, k=(len(min0) + 1), nsol=6)
+    matri = np.array(matri)
+    min0 = set_cover_solver(matri, nsol=6)
+    # min1 = set_cover_solver(matri, k=(len(min0) + 1), nsol=6)
     print min0
     # print min1
