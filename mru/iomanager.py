@@ -3,16 +3,14 @@
 import os
 import pickle
 import logging
-import re
-import numpy as np
-
-from srg import graph as gr
 
 
-FILEDIR = "file/"
+FILEDIR = os.path.join(os.path.dirname(__file__), '../file/')
+
+log = logging.getLogger(__name__)
 
 
-def save(res, filename=""):
+def save_file(res, filename=""):
     """ save the results in a pickle file in FILEDIR folder
     Parameters
     ----------
@@ -36,7 +34,7 @@ def save(res, filename=""):
     return filename
 
 
-def load(filename):
+def load_file(filename):
     """Read the result stored in a file.
     Parameters
     ----------
@@ -55,7 +53,7 @@ def load(filename):
     return res
 
 
-def save_graph(graph):
+def save_graph(graph, den, dead):
     """save graph in file
     example -> ./file/
                   graphs/
@@ -64,32 +62,39 @@ def save_graph(graph):
     Parameter
     ---------
     graph: graph instance to be saved
+    den: density of edges in the graph
     Return
     ------
     fn: complete file path ./file/....pickle
     """
     tgts = graph.getTargets()
     size = tgts.shape[0]
+    den = str(int(den * 100))
 
-    adj = graph.getAdjacencyMatrix()
-    adj[adj == gr.inf] = 0
-    nedges = np.sum(adj) / 2
-    den = round((2 * nedges) / ((size * (size - 1)) + 0.0), 2) * 100
-    den = str(int(den))
-
-    dead = graph.vertices[tgts[0]].deadline
     dirname = "graphs/graphs_" + str(size) + "_ntgts/"
     if not os.path.exists(FILEDIR + dirname):
         os.makedirs(FILEDIR + dirname)
     filename = "instance_ntgts_" + str(size) + "_den_" + den\
                + "_dead_" + str(dead)
-    fn = save(graph, dirname + filename)
-    logging.info('iomanager: saved graph in ' + fn)
+    fn = save_file(graph, dirname + filename)
+    log.debug('saved graph in ' + fn)
 
     return fn
 
 
-def save_results(graph_path, result):
+def load_graph(ntgts, dead, den, gix):
+
+    ntgts = str(ntgts)
+    dead = str(dead)
+    den = str(den)
+    gix = str(gix)
+    graph_path = "graphs/graphs_" + ntgts + "_ntgts/instance_ntgts_"\
+                 + ntgts + "_den_" + den + "_dead_" + dead + "_ix_" + gix
+
+    return load_file(FILEDIR + graph_path + ".pickle")
+
+
+def save_results(ntgts, dead, den, gix, result):
     """save results in file
     example -> ./file/
                   results/
@@ -103,19 +108,35 @@ def save_results(graph_path, result):
     ------
     fn: complete file path ./file/....pickle
     """
-    ntgts = re.search('ntgts_([0-9]+?)_', graph_path).group(1)
-    den = re.search('den_([0-9]+?)_', graph_path).group(1)
-    dead = re.search('dead_([0-9]+?)_', graph_path).group(1)
-    index = re.search('_ix_([0-9]+?)$', graph_path).group(1)
+    ntgts = str(ntgts)
+    dead = str(dead)
+    den = str(den)
+    gix = str(gix)
     dirname = "results/res_graphs_" + str(ntgts) + "_ntgts/"
     if not os.path.exists(FILEDIR + dirname):
         os.makedirs(FILEDIR + dirname)
     filename = "res_instance_ntgts_" + str(ntgts) + "_den_" + den + "_dead_"\
-               + str(dead) + "_graphix_" + str(index)
-    fn = save(result, dirname + filename)
-    logging.info('iomanager: saved results in ' + fn)
+               + str(dead) + "_graphix_" + str(gix)
+    fn = save_file(result, dirname + filename)
+    log.debug('saved results in ' + fn)
 
-    if not os.path.isfile(FILEDIR + "graphs/" + graph_path + ".pickle"):
-        logging.warn('wrong graph path specified for saving the result')
+    graph_path = "graphs/graphs_" + ntgts + "_ntgts/instance_ntgts_"\
+                 + ntgts + "_den_" + den + "_dead_" + dead + "_ix_" + gix
+
+    if not os.path.isfile(FILEDIR + graph_path + ".pickle"):
+        log.warn('wrong graph path specified for saving the result')
 
     return fn
+
+
+def load_results(ntgts, dead, den, gix):
+
+    ntgts = str(ntgts)
+    dead = str(dead)
+    den = str(den)
+    gix = str(gix)
+    res_path = "results/res_graphs_" + ntgts + "_ntgts/res_instance_ntgts_"\
+               + ntgts + "_den_" + den + "_dead_" + dead + "_graphix_"\
+               + gix + "_ix_0"
+
+    return load_file(FILEDIR + res_path + ".pickle")
