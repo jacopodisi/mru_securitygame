@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import logging
 import numpy as np
 import ILP_solver as sc
 
@@ -11,6 +12,8 @@ from patrolling.correlated import correlated_row_gen as cr
 
 
 MTYPE = np.uint8
+
+log = logging.getLogger(__name__)
 
 
 def compute_values(graph, rm_dominated=False, enum=1):
@@ -32,6 +35,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
     comp_time: time spent for the computation
     """
     try:
+        log.debug("start compute_values function")
         start_time = time.time()
         tgts = graph.getTargets()
         tgt_values = np.array([v.value for v in graph.vertices])
@@ -43,28 +47,46 @@ def compute_values(graph, rm_dominated=False, enum=1):
         max_res_strategy = None
         comp_time = -1
 
+        log.debug("compute shortest sets")
         shortest_matrix = compute_shortest_sets(graph, tgts)
+        log.debug("compute covering routes")
         csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
 
-        # minimum resource game solution
-        min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
-        min_n_res = min_res.shape[1]
-        solutionlist.append((0, 0, 0, [0]))
-        for sol in range(min_res.shape[0]):
-            road_dict = {k + 1: csr[min_res[sol, k]] for k in range(min_n_res)}
-            solution = cr.correlated(road_dict, tgt_values)
-            if solutionlist[-1][0] < solution[0]:
-                solutionlist[-1] = (solution[0], solution[1], min_res[sol])
-
-        # optimum resource game solutionlist
+        # optimum resource game solution
+        log.debug("compute solution with maximum resources")
         max_res_strategy = sc.maximum_resources(csr, tgts)
         max_num_res = len(max_res_strategy)
 
+        # minimum resource game solution
+        log.debug("compute solution with minimum resources")
+        min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
+        min_n_res = min_res.shape[1]
+        if min_n_res < max_num_res:
+            road_dict = {k + 1: csr[min_res[0, k]]
+                         for k in range(min_n_res)}
+            solutionlist.append(cr.correlated(road_dict, tgt_values)[0:2] +
+                                (min_res[0],))
+            log.debug("compute solution for different dispositions of" +
+                      " minimum resources")
+            for sol in range(1, min_res.shape[0]):
+                road_dict = {k + 1: csr[min_res[sol, k]]
+                             for k in range(min_n_res)}
+                solution = cr.correlated(road_dict, tgt_values)
+                if solutionlist[-1][0] < solution[0]:
+                    solutionlist[-1] = (solution[0], solution[1], min_res[sol])
+
         # what happen between
         for i in range(min_res.shape[1] + 1, max_num_res):
-            res = sc.set_cover_solver(shortest_matrix[:, tgts], k=i, nsol=enum)
-            solutionlist.append((0, 0, [0]))
-            for sol in range(res.shape[0]):
+            log.debug("compute solution with " + str(i) + " resources")
+            res = sc.set_cover_solver(shortest_matrix[:, tgts],
+                                      k=i, nsol=enum)
+            road_dict = {k + 1: csr[res[0, k]]
+                         for k in range(res.shape[1])}
+            solutionlist.append(cr.correlated(road_dict, tgt_values)[0:2] +
+                                (res[0],))
+            log.debug("compute solution for different disposition of " +
+                      str(i) + " resources")
+            for sol in range(1, res.shape[0]):
                 road_dict = {k + 1: csr[res[sol, k]]
                              for k in range(res.shape[1])}
                 solution = cr.correlated(road_dict, tgt_values)
@@ -79,6 +101,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
             strategies[sol[2].shape[0]] = sol[1]
             placements[sol[2].shape[0]] = [
                 (r + 1, p) for r, p in enumerate(sol[2])]
+
         placements[max_num_res] = [
             (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
         game_values[max_num_res] = 1
@@ -88,10 +111,14 @@ def compute_values(graph, rm_dominated=False, enum=1):
 
         return game_values, placements, strategies, comp_time
 
-    except cr.TimeoutException:
+    except (cr.TimeoutException, KeyboardInterrupt) as ex:
+
+        log.exception(ex)
 
         for sol in solutionlist:
-            if sol[0] > 0:
+            if sol[0] is not None and\
+               sol[1] is not None and\
+               sol[2] is not None:
                 game_values[sol[2].shape[0]] = sol[0]
                 strategies[sol[2].shape[0]] = sol[1]
                 placements[sol[2].shape[0]] = [
