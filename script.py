@@ -56,7 +56,7 @@ def main():
 
     log.debug("START computation for graph " + ntgts + " " + dead + " " + ix)
 
-    with cr.time_limit(3600):
+    with cr.time_limit(36000):
         result = cv.compute_values(graph, rm_dominated=True, enum=10)
 
     io.save_results(ntgts, dead, den, ix, result)
