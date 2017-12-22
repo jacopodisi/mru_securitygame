@@ -32,7 +32,13 @@ def compute_values(graph, rm_dominated=False, enum=1):
                                     [(resource, position), ...]}
     strategies: dictionary of type {"num_resources":
                                     [([(res, routeid), ..], prob), ...]}
-    comp_time: time spent for the computation
+    time_list: list of computatino times of each operation(shortest sets,
+                                                           covering_routes,
+                                                           max_resources,
+                                                           setcover_min,
+                                                           correlated min,
+                                                           setcover_k,
+                                                           )
     """
     try:
         log.debug("start compute_values function")
@@ -44,28 +50,38 @@ def compute_values(graph, rm_dominated=False, enum=1):
         strategies = {}
         placements = {}
         solutionlist = []
+        times_list = {}
         max_res_strategy = None
-        comp_time = -1
 
         log.debug("compute shortest sets")
+        st_time = time.time()
         shortest_matrix = compute_shortest_sets(graph, tgts)
+        times_list[0] = time.time() - st_time
         log.debug("compute covering routes")
+        st_time = time.time()
         csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
+        times_list[1] = time.time() - st_time
 
         # optimum resource game solution
         log.debug("compute solution with maximum resources")
+        st_time = time.time()
         max_res_strategy = sc.maximum_resources(csr, tgts)
+        times_list[2] = time.time() - st_time
         max_num_res = len(max_res_strategy)
 
         # minimum resource game solution
         log.debug("compute solution with minimum resources")
+        st_time = time.time()
         min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
+        times_list[3] = time.time() - st_time
         min_n_res = min_res.shape[1]
         if min_n_res < max_num_res:
             road_dict = {k + 1: csr[min_res[0, k]]
                          for k in range(min_n_res)}
+            st_time = time.time()
             solutionlist.append(cr.correlated(road_dict, tgt_values)[0:2] +
                                 (min_res[0],))
+            times_list[4] = time.time() - st_time
             log.debug("compute solution for different dispositions of" +
                       " minimum resources")
             for sol in range(1, min_res.shape[0]):
@@ -76,14 +92,19 @@ def compute_values(graph, rm_dominated=False, enum=1):
                     solutionlist[-1] = (solution[0], solution[1], min_res[sol])
 
         # what happen between
+        times_list[5] = []
         for i in range(min_res.shape[1] + 1, max_num_res):
             log.debug("compute solution with " + str(i) + " resources")
+            st_time = time.time()
             res = sc.set_cover_solver(shortest_matrix[:, tgts],
                                       k=i, nsol=enum)
+            times_list[5].append(time.time() - st_time)
             road_dict = {k + 1: csr[res[0, k]]
                          for k in range(res.shape[1])}
+            st_time = time.time()
             solutionlist.append(cr.correlated(road_dict, tgt_values)[0:2] +
                                 (res[0],))
+            times_list[5].append(time.time() - st_time)
             log.debug("compute solution for different disposition of " +
                       str(i) + " resources")
             for sol in range(1, res.shape[0]):
@@ -93,7 +114,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
                 if solutionlist[-1][0] < solution[0]:
                     solutionlist[-1] = (solution[0], solution[1], res[sol])
 
-        comp_time = time.time() - start_time
+        times_list[6] = time.time() - start_time
 
         # change solution format in a more readable ones
         for sol in solutionlist:
@@ -109,7 +130,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
             [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
             1.0)]
 
-        return game_values, placements, strategies, comp_time
+        return game_values, placements, strategies, times_list
 
     except (cr.TimeoutException, KeyboardInterrupt) as ex:
 
@@ -131,7 +152,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
                 [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
                 1.0)]
 
-        return game_values, placements, strategies, comp_time
+        return game_values, placements, strategies, times_list
 
 
 def compute_shortest_sets(graph_game, targets):
