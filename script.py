@@ -12,8 +12,7 @@ Parameters
 
 import sys
 import getopt
-import os
-import pickle
+import logging
 
 from mru import computevalue as cv
 from mru import iomanager as io
@@ -22,12 +21,15 @@ from mru.patrolling.correlated import correlated_row_gen as cr
 
 def main():
 
+    logfile = "script.log"
+
     options, _ = getopt.getopt(sys.argv[1:],
-                               'd:t:D:i:',
+                               'd:t:D:i:l:',
                                ['density=',
                                 'ntarget=',
                                 'deadline=',
-                                'graphid='])
+                                'graphid=',
+                                'logfile='])
 
     for opt, arg in options:
         if opt in ('-d', '--density'):
@@ -38,20 +40,28 @@ def main():
             dead = arg
         elif opt in ('-i', '--graphid'):
             ix = arg
+        elif opt in ('-l', '--logfile'):
+            logfile = arg
 
-    graph_path = "graphs_" + ntgts + "_ntgts/instance_ntgts_"\
-                 + ntgts + "_den_" + den + "_dead_" + dead + "_ix_" + ix
+    logging.basicConfig(filename=logfile,
+                        filemode='a',
+                        format='[%(asctime)s.%(msecs)3d] [%(levelname)-8s]'
+                               ' --- %(message)s (%(name)s:%(lineno)s)',
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        level=logging.DEBUG)
 
-    if not os.path.isfile("./file/graphs/" + graph_path + ".pickle"):
-        m = 'graph {} do not exist'.format("./file/graphs/" + graph_path + ".pickle")
-        raise IOError(m)
-    with open("./file/graphs/" + graph_path + ".pickle", mode='r') as f:
-        graph = pickle.load(f)
+    log = logging.getLogger(__name__)
 
-    with cr.time_limit(60):
+    graph = io.load_graph(ntgts, dead, den, ix)
+
+    log.debug("START computation for graph " + ntgts + " " + dead + " " + ix)
+
+    with cr.time_limit(3600):
         result = cv.compute_values(graph, rm_dominated=True, enum=10)
 
-    io.save_results(graph_path, result)
+    io.save_results(ntgts, dead, den, ix, result)
+
+    log.debug("END computation for graph " + ntgts + " " + dead + " " + ix)
 
 
 if __name__ == '__main__':
