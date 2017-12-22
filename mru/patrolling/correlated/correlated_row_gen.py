@@ -88,7 +88,7 @@ def correlated(I, target_values):
 
         delta=abs(attacker_tupla[0] - old_game_value)
 
-        logging.info('partial - eps = %f - n iter = %d - team value = %f',EPS,n_iter,attacker_tupla[0])
+        # logging.info('partial - eps = %f - n iter = %d - team value = %f',EPS,n_iter,attacker_tupla[0])
 
         if delta > EPS:
             # compute the best response to the latest attacker's strategy
