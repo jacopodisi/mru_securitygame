@@ -1,0 +1,93 @@
+[2017-12-22 16:35:11.782] [DEBUG   ] --- START computation for graph 20 4 8 (__main__:57)
+[2017-12-22 16:35:11.782] [DEBUG   ] --- start compute_values function (mru.computevalue:44)
+[2017-12-22 16:35:11.783] [DEBUG   ] --- compute shortest sets (mru.computevalue:56)
+[2017-12-22 16:35:11.790] [DEBUG   ] --- compute covering routes (mru.computevalue:60)
+[2017-12-22 17:16:50.560] [DEBUG   ] --- compute solution with maximum resources (mru.computevalue:66)
+[2017-12-22 17:16:54.871] [DEBUG   ] --- compute solution with minimum resources (mru.computevalue:73)
+[2017-12-22 17:16:59.775] [DEBUG   ] --- compute solution for different dispositions of minimum resources (mru.computevalue:86)
+[2017-12-22 17:18:14.643] [DEBUG   ] --- compute solution with 2 resources (mru.computevalue:97)
+[2017-12-22 17:18:36.363] [DEBUG   ] --- compute solution for different disposition of 2 resources (mru.computevalue:109)
+[2017-12-22 17:23:23.722] [DEBUG   ] --- compute solution with 3 resources (mru.computevalue:97)
+[2017-12-22 17:24:18. 32] [DEBUG   ] --- compute solution for different disposition of 3 resources (mru.computevalue:109)
+[2017-12-22 17:36:11.551] [DEBUG   ] --- saved results in /home/multidefender/mru_securitygame/mru/../file/results/res_graphs_20_ntgts/res_instance_ntgts_20_den_25_dead_4_graphix_8_ix_0.pickle (mru.iomanager:121)
+[2017-12-22 17:36:11.551] [DEBUG   ] --- END computation for graph 20 4 8 (__main__:64)
+[2017-12-22 17:36:12.352] [DEBUG   ] --- START computation for graph 20 10 4 (__main__:57)
+[2017-12-22 17:36:12.353] [DEBUG   ] --- start compute_values function (mru.computevalue:44)
+[2017-12-22 17:36:12.353] [DEBUG   ] --- compute shortest sets (mru.computevalue:56)
+[2017-12-22 17:36:12.365] [DEBUG   ] --- compute covering routes (mru.computevalue:60)
+[2017-12-23 03:36:12.355] [ERROR   ] --- Timed out (mru.computevalue:137)
+Traceback (most recent call last):
+  File "/home/multidefender/mru_securitygame/mru/computevalue.py", line 62, in compute_values
+    csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
+  File "/home/multidefender/mru_securitygame/mru/computevalue.py", line 215, in compute_covering_routes
+    covset = cs.computeCovSet(graph_game, ver, targets)
+  File "/home/multidefender/mru_securitygame/mru/srg/computecovsets.py", line 73, in computeCovSet
+    C = purgeDominatedStrategies(C, i+1);
+  File "/home/multidefender/mru_securitygame/mru/srg/computecovsets.py", line 96, in purgeDominatedStrategies
+    condition1 = len(routes[n]==i); # we just deal with the last layer of routes, i.e. the longest ones
+  File "/home/multidefender/mru_securitygame/mru/patrolling/correlated/correlated_row_gen.py", line 29, in signal_handler
+    raise TimeoutException, "Timed out"
+TimeoutException: Timed out
+[2017-12-23 03:36:12.413] [DEBUG   ] --- saved results in /home/multidefender/mru_securitygame/mru/../file/results/res_graphs_20_ntgts/res_instance_ntgts_20_den_25_dead_10_graphix_4_ix_0.pickle (mru.iomanager:121)
+[2017-12-23 03:36:12.413] [DEBUG   ] --- END computation for graph 20 10 4 (__main__:64)
+[2017-12-23 03:36:13.284] [DEBUG   ] --- START computation for graph 20 19 0 (__main__:57)
+[2017-12-23 03:36:13.284] [DEBUG   ] --- start compute_values function (mru.computevalue:44)
+[2017-12-23 03:36:13.285] [DEBUG   ] --- compute shortest sets (mru.computevalue:56)
+[2017-12-23 03:36:13.292] [DEBUG   ] --- compute covering routes (mru.computevalue:60)
+[2017-12-23 13:36:13.285] [ERROR   ] --- Timed out (mru.computevalue:137)
+Traceback (most recent call last):
+  File "/home/multidefender/mru_securitygame/mru/computevalue.py", line 62, in compute_values
+    csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
+  File "/home/multidefender/mru_securitygame/mru/computevalue.py", line 215, in compute_covering_routes
+    covset = cs.computeCovSet(graph_game, ver, targets)
+  File "/home/multidefender/mru_securitygame/mru/srg/computecovsets.py", line 73, in computeCovSet
+    C = purgeDominatedStrategies(C, i+1);
+  File "/home/multidefender/mru_securitygame/mru/srg/computecovsets.py", line 98, in purgeDominatedStrategies
+    condition3 =  m not in deleted and n not in deleted;
+  File "/home/multidefender/mru_securitygame/mru/patrolling/correlated/correlated_row_gen.py", line 29, in signal_handler
+    raise TimeoutException, "Timed out"
+TimeoutException: Timed out
+[2017-12-23 13:36:13.304] [DEBUG   ] --- saved results in /home/multidefender/mru_securitygame/mru/../file/results/res_graphs_20_ntgts/res_instance_ntgts_20_den_25_dead_19_graphix_0_ix_0.pickle (mru.iomanager:121)
+[2017-12-23 13:36:13.304] [DEBUG   ] --- END computation for graph 20 19 0 (__main__:64)
+[2017-12-23 13:36:14.  8] [DEBUG   ] --- START computation for graph 25 5 6 (__main__:57)
+[2017-12-23 13:36:14.  8] [DEBUG   ] --- start compute_values function (mru.computevalue:44)
+[2017-12-23 13:36:14.  9] [DEBUG   ] --- compute shortest sets (mru.computevalue:56)
+[2017-12-23 13:36:14. 18] [DEBUG   ] --- compute covering routes (mru.computevalue:60)
+[2017-12-23 23:36:14.  9] [ERROR   ] --- Timed out (mru.computevalue:137)
+Traceback (most recent call last):
+  File "/home/multidefender/mru_securitygame/mru/computevalue.py", line 62, in compute_values
+    csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
+  File "/home/multidefender/mru_securitygame/mru/computevalue.py", line 215, in compute_covering_routes
+    covset = cs.computeCovSet(graph_game, ver, targets)
+  File "/home/multidefender/mru_securitygame/mru/srg/computecovsets.py", line 73, in computeCovSet
+    C = purgeDominatedStrategies(C, i+1);
+  File "/home/multidefender/mru_securitygame/mru/srg/computecovsets.py", line 96, in purgeDominatedStrategies
+    condition1 = len(routes[n]==i); # we just deal with the last layer of routes, i.e. the longest ones
+  File "/home/multidefender/mru_securitygame/mru/patrolling/correlated/correlated_row_gen.py", line 29, in signal_handler
+    raise TimeoutException, "Timed out"
+TimeoutException: Timed out
+[2017-12-23 23:36:14. 20] [DEBUG   ] --- saved results in /home/multidefender/mru_securitygame/mru/../file/results/res_graphs_25_ntgts/res_instance_ntgts_25_den_25_dead_5_graphix_6_ix_0.pickle (mru.iomanager:121)
+[2017-12-23 23:36:14. 20] [DEBUG   ] --- END computation for graph 25 5 6 (__main__:64)
+[2017-12-23 23:36:14.579] [DEBUG   ] --- START computation for graph 30 5 2 (__main__:57)
+[2017-12-23 23:36:14.579] [DEBUG   ] --- start compute_values function (mru.computevalue:44)
+[2017-12-23 23:36:14.580] [DEBUG   ] --- compute shortest sets (mru.computevalue:56)
+[2017-12-23 23:36:14.593] [DEBUG   ] --- compute covering routes (mru.computevalue:60)
+[2017-12-24 09:36:14.580] [ERROR   ] --- Timed out (mru.computevalue:137)
+Traceback (most recent call last):
+  File "/home/multidefender/mru_securitygame/mru/computevalue.py", line 62, in compute_values
+    csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
+  File "/home/multidefender/mru_securitygame/mru/computevalue.py", line 215, in compute_covering_routes
+    covset = cs.computeCovSet(graph_game, ver, targets)
+  File "/home/multidefender/mru_securitygame/mru/srg/computecovsets.py", line 73, in computeCovSet
+    C = purgeDominatedStrategies(C, i+1);
+  File "/home/multidefender/mru_securitygame/mru/srg/computecovsets.py", line 98, in purgeDominatedStrategies
+    condition3 =  m not in deleted and n not in deleted;
+  File "/home/multidefender/mru_securitygame/mru/patrolling/correlated/correlated_row_gen.py", line 29, in signal_handler
+    raise TimeoutException, "Timed out"
+TimeoutException: Timed out
+[2017-12-24 09:36:14.587] [DEBUG   ] --- saved results in /home/multidefender/mru_securitygame/mru/../file/results/res_graphs_30_ntgts/res_instance_ntgts_30_den_25_dead_5_graphix_2_ix_0.pickle (mru.iomanager:121)
+[2017-12-24 09:36:14.587] [DEBUG   ] --- END computation for graph 30 5 2 (__main__:64)
+[2017-12-24 09:36:15.216] [DEBUG   ] --- START computation for graph 30 10 8 (__main__:57)
+[2017-12-24 09:36:15.216] [DEBUG   ] --- start compute_values function (mru.computevalue:44)
+[2017-12-24 09:36:15.216] [DEBUG   ] --- compute shortest sets (mru.computevalue:56)
+[2017-12-24 09:36:15.230] [DEBUG   ] --- compute covering routes (mru.computevalue:60)
