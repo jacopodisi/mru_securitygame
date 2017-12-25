@@ -21,15 +21,18 @@ from mru.patrolling.correlated import correlated_row_gen as cr
 
 def main():
 
+    timeout = False
+
     logfile = "script.log"
 
     options, _ = getopt.getopt(sys.argv[1:],
-                               'd:t:D:i:l:',
+                               'd:t:D:i:l:T',
                                ['density=',
                                 'ntarget=',
                                 'deadline=',
                                 'graphid=',
-                                'logfile='])
+                                'logfile=',
+                                'timeout'])
 
     for opt, arg in options:
         if opt in ('-d', '--density'):
@@ -42,6 +45,8 @@ def main():
             ix = arg
         elif opt in ('-l', '--logfile'):
             logfile = arg
+        elif opt in ('-T', '--timeout'):
+            timeout = True
 
     logging.basicConfig(filename=logfile,
                         filemode='a',
@@ -54,14 +59,18 @@ def main():
 
     graph = io.load_graph(ntgts, dead, den, ix)
 
-    log.debug("START computation for graph " + ntgts + " " + dead + " " + ix)
-
-    with cr.time_limit(36000):
+    log.debug("START computation for graph " + ntgts + " " + dead +
+              " 0." + den + " " + ix)
+    if timeout:
+        with cr.time_limit(36000):
+            result = cv.compute_values(graph, rm_dominated=True, enum=10)
+    else:
         result = cv.compute_values(graph, rm_dominated=True, enum=10)
 
     io.save_results(ntgts, dead, den, ix, result)
 
-    log.debug("END computation for graph " + ntgts + " " + dead + " " + ix)
+    log.debug("END computation for graph " + ntgts + " " + dead +
+              " 0." + den + " " + ix)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,4 @@
+{
+  "mru/test/test_computevalue.py::TestComputeValue6::test_compute_values_rmdom": true, 
+  "test/test_ilp_solver.py::TestILPSolver1::test_set_cover_solver": true
+}
