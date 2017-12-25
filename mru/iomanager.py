@@ -69,7 +69,7 @@ def save_graph(graph, den, dead):
     """
     tgts = graph.getTargets()
     size = tgts.shape[0]
-    den = str(int(den * 100))
+    den = str("%.2f" % den)[2:]
 
     dirname = "graphs/graphs_" + str(size) + "_ntgts/"
     if not os.path.exists(FILEDIR + dirname):
@@ -86,7 +86,7 @@ def load_graph(ntgts, dead, den, gix):
 
     ntgts = str(ntgts)
     dead = str(dead)
-    den = str(den)
+    den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
     graph_path = "graphs/graphs_" + ntgts + "_ntgts/instance_ntgts_"\
                  + ntgts + "_den_" + den + "_dead_" + dead + "_ix_" + gix
@@ -110,7 +110,7 @@ def save_results(ntgts, dead, den, gix, result):
     """
     ntgts = str(ntgts)
     dead = str(dead)
-    den = str(den)
+    den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
     dirname = "results/res_graphs_" + str(ntgts) + "_ntgts/"
     if not os.path.exists(FILEDIR + dirname):
@@ -133,7 +133,7 @@ def load_results(ntgts, dead, den, gix):
 
     ntgts = str(ntgts)
     dead = str(dead)
-    den = str(den)
+    den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
     res_path = "results/res_graphs_" + ntgts + "_ntgts/res_instance_ntgts_"\
                + ntgts + "_den_" + den + "_dead_" + dead + "_graphix_"\
