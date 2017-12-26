@@ -15,6 +15,12 @@ corebutch = [(1, 10, 1, 1, 1, "25", True),
 # Start from the first cell. Rows and columns are zero indexed.
 row = 0
 
+for core in range(corebutch[0][0], corebutch[-1][1]):
+    fn = "./runners/runcore" + str(core) + ".sh"
+    with open(fn, mode='a') as f:
+        f.write("#!/bin/bash\n")
+        f.write("DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"")
+
 for tp in corebutch:
     inicore = tp[0]
     endcore = tp[1]
@@ -28,7 +34,7 @@ for tp in corebutch:
                     worksheet.write(row, core - 1, str(t) + "." + tp[-2] +
                                     "." + str(d) + "." + str(i))
                     fn = "./runners/runcore" + str(core) + ".sh"
-                    command = "python ../script.py -d " + tp[-2] + " -t "\
+                    command = "python $DIR/../script.py -d " + tp[-2] + " -t "\
                               + str(t) + " -D " + str(d) + " -i " + str(i)\
                               + " -l logcore" + str(core) + ".log"
                     with open(fn, mode='a') as f:
@@ -46,7 +52,7 @@ for tp in corebutch:
                     worksheet.write(row, core - 1, str(t) + "." + tp[-2] +
                                     "." + str(d) + "." + str(i))
                     fn = "./runners/runcore" + str(core) + ".sh"
-                    command = "python ../script.py -d " + tp[-2] + " -t "\
+                    command = "python $DIR/../script.py -d " + tp[-2] + " -t "\
                               + str(t) + " -D " + str(d) + " -i " + str(i)\
                               + " -l logcore" + str(core) + ".log"
                     with open(fn, mode='a') as f:
@@ -64,7 +70,7 @@ for tp in corebutch:
                     worksheet.write(row, core - 1, str(t) + "." + tp[-2] +
                                     "." + str(d) + "." + str(i))
                     fn = "./runners/runcore" + str(core) + ".sh"
-                    command = "python ../script.py -d " + tp[-2] + " -t "\
+                    command = "python $DIR/../script.py -d " + tp[-2] + " -t "\
                               + str(t) + " -D " + str(d) + " -i " + str(i)\
                               + " -l logcore" + str(core) + ".log"
                     with open(fn, mode='a') as f:
