@@ -1,4 +1,5 @@
-
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 python $DIR/../script.py -d 08 -t 25 -D 5 -i 0 -l logcore16.log
 python $DIR/../script.py -d 08 -t 25 -D 5 -i 1 -l logcore16.log
 python $DIR/../script.py -d 08 -t 25 -D 5 -i 2 -l logcore16.log
