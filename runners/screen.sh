@@ -1,22 +1,22 @@
 #!/bin/sh
 screen -dmS core1
-screen -S core1 -p 0 -X stuff './runcore1.sh\n'
-screen -dmS core2
-screen -S core2 -p 0 -X stuff './runcore2.sh\n'
-screen -dmS core3
-screen -S core3 -p 0 -X stuff './runcore3.sh\n'
-screen -dmS core4
-screen -S core4 -p 0 -X stuff './runcore4.sh\n'
-screen -dmS core5
-screen -S core5 -p 0 -X stuff './runcore5.sh\n'
-screen -dmS core6
-screen -S core6 -p 0 -X stuff './runcore6.sh\n'
-screen -dmS core7
-screen -S core7 -p 0 -X stuff './runcore7.sh\n'
-screen -dmS core8
-screen -S core8 -p 0 -X stuff './runcore8.sh\n'
-screen -dmS core9
-screen -S core9 -p 0 -X stuff './runcore9.sh\n'
+screen -S core01 -p 0 -X stuff './runcore1.sh\n'
+screen -dmS core02
+screen -S core02 -p 0 -X stuff './runcore2.sh\n'
+screen -dmS core03
+screen -S core03 -p 0 -X stuff './runcore3.sh\n'
+screen -dmS core04
+screen -S core04 -p 0 -X stuff './runcore4.sh\n'
+screen -dmS core05
+screen -S core05 -p 0 -X stuff './runcore5.sh\n'
+screen -dmS core06
+screen -S core06 -p 0 -X stuff './runcore6.sh\n'
+screen -dmS core07
+screen -S core07 -p 0 -X stuff './runcore7.sh\n'
+screen -dmS core08
+screen -S core08 -p 0 -X stuff './runcore8.sh\n'
+screen -dmS core09
+screen -S core09 -p 0 -X stuff './runcore9.sh\n'
 screen -dmS core10
 screen -S core10 -p 0 -X stuff './runcore10.sh\n'
 screen -dmS core11
