@@ -8,7 +8,7 @@ def main():
 
     den = [0.06]
     ntgts = [35, 40, 45, 50]
-    dead = [5, 10] # , 5, 10, 15, 19]
+    dead = [5, 10]  # , 5, 10, 15, 19]
     ninsta = 2
 
     for d in den:
@@ -16,8 +16,15 @@ def main():
             for dl in dead:
                 for _ in xrange(ninsta):
                     try:
-                        mat = gr.generateRandMatrix(t, d, density=True, niter=100000)
-                        gra = gr.generateRandomGraph(mat, mat.shape[0], 1, dl, dl)
+                        mat = gr.generateRandMatrix(t,
+                                                    d,
+                                                    density=True,
+                                                    niter=100000)
+                        gra = gr.generateRandomGraph(mat,
+                                                     mat.shape[0],
+                                                     1,
+                                                     dl,
+                                                     dl)
 
                         print io.save_graph(gra, d, dl)
                     except ValueError:
