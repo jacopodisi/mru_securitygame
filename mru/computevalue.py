@@ -32,7 +32,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
                                     [(resource, position), ...]}
     strategies: dictionary of type {"num_resources":
                                     [([(res, routeid), ..], prob), ...]}
-    time_list: list of computatino times of each operation(shortest sets,
+    time_list: list of computation times of each operation(shortest_sets,
                                                            covering_routes,
                                                            max_resources,
                                                            setcover_min,

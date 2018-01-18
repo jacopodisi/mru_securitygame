@@ -58,7 +58,7 @@ def compute_nx_graph(graph):
     return gr, pos
 
 
-def plot_values(values, x_label='', y_label=''):
+def plot_values(values, x_label='# resources', y_label='expected utility'):
     val = sorted(values.items())
     x, y = zip(*val)
 
