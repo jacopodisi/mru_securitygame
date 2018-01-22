@@ -14,6 +14,7 @@ import sys
 import getopt
 import logging
 import fcntl
+import os
 
 from mru import computevalue as cv
 from mru import iomanager as io
@@ -54,14 +55,6 @@ def read_opt(str_opt):
 
 def main(den, ntgts, dead, ix, timeout, logfile):
 
-    print 'run main with options: \n' +\
-          'den=' + str(den) + '\n' +\
-          'ntgts=' + str(ntgts) + '\n' +\
-          'dead=' + str(dead) + '\n' +\
-          'ix=' + str(ix) + '\n' +\
-          'timeout=' + str(timeout) + '\n' +\
-          'logfile=' + str(logfile) + '\n'
-
     if logfile is None:
         logfile = 'script.log'
 
@@ -84,20 +77,25 @@ def main(den, ntgts, dead, ix, timeout, logfile):
     else:
         result = cv.compute_values(graph, rm_dominated=True, enum=10)
 
-    # io.save_results(ntgts, dead, den, ix, result)
+    io.save_results(ntgts, dead, den, ix, result)
 
     log.debug("END computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
 
 
 if __name__ == '__main__':
+    path = os.path.dirname(os.path.realpath(__file__))
     options = read_opt(sys.argv[1:])
 
     if len(sys.argv[1:]) >= 4:
         main(*options[:-1])
     else:
-        poolname = options[-1] if options[-1] is not None else 'pool.txt'
+        poolname = options[-1] if options[-1] is not None else path +\
+            '/pool.txt'
         logfile = options[-2]
+        if not os.path.isfile(poolname):
+            m = 'File {} do not exist'.format(poolname)
+            raise IOError(m)
         while True:
             with open(poolname, "r") as fin:
                 fcntl.flock(fin, fcntl.LOCK_EX)
