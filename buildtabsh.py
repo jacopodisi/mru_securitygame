@@ -34,9 +34,9 @@ for tp in corebutch:
                     worksheet.write(row, core - 1, str(t) + "." + tp[-2] +
                                     "." + str(d) + "." + str(i))
                     fn = "./runners/runcore" + str(core) + ".sh"
-                    command = "python $DIR/../script.py -d " + tp[-2] + " -t "\
-                              + str(t) + " -D " + str(d) + " -i " + str(i)\
-                              + " -l logcore" + str(core) + ".log"
+                    command = "python $DIR/../script.py -d " + tp[-2] + \
+                              " -t " + str(t) + " -D " + str(d) + " -i " +\
+                              str(i) + " -l logcore" + str(core) + ".log"
                     with open(fn, mode='a') as f:
                         f.write("\n" + command)
                     core += 1
@@ -52,9 +52,9 @@ for tp in corebutch:
                     worksheet.write(row, core - 1, str(t) + "." + tp[-2] +
                                     "." + str(d) + "." + str(i))
                     fn = "./runners/runcore" + str(core) + ".sh"
-                    command = "python $DIR/../script.py -d " + tp[-2] + " -t "\
-                              + str(t) + " -D " + str(d) + " -i " + str(i)\
-                              + " -l logcore" + str(core) + ".log"
+                    command = "python $DIR/../script.py -d " + tp[-2] + \
+                              " -t " + str(t) + " -D " + str(d) + " -i " +\
+                              str(i) + " -l logcore" + str(core) + ".log"
                     with open(fn, mode='a') as f:
                         f.write("\n" + command)
                     core += 1
@@ -70,9 +70,9 @@ for tp in corebutch:
                     worksheet.write(row, core - 1, str(t) + "." + tp[-2] +
                                     "." + str(d) + "." + str(i))
                     fn = "./runners/runcore" + str(core) + ".sh"
-                    command = "python $DIR/../script.py -d " + tp[-2] + " -t "\
-                              + str(t) + " -D " + str(d) + " -i " + str(i)\
-                              + " -l logcore" + str(core) + ".log"
+                    command = "python $DIR/../script.py -d " + tp[-2] + \
+                              " -t " + str(t) + " -D " + str(d) + " -i " +\
+                              str(i) + " -l logcore" + str(core) + ".log"
                     with open(fn, mode='a') as f:
                         f.write("\n" + command)
                     core += 1
