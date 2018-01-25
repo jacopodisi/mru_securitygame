@@ -45,7 +45,7 @@ def read_opt(str_opt):
             ix = arg
         elif opt in ('-l', '--logfile'):
             logfile = arg
-        elif opt in ('-l', '--logfile'):
+        elif opt in ('-p', '--poolname'):
             poolname = arg
         elif opt in ('-T', '--timeout'):
             timeout = True
@@ -54,6 +54,10 @@ def read_opt(str_opt):
 
 
 def main(den, ntgts, dead, ix, timeout, logfile):
+
+    if not (den and ntgts and dead and ix):
+        print 'Value error: not defined every options of graph'
+        return 0
 
     if logfile is None:
         logfile = 'script.log'
@@ -77,17 +81,20 @@ def main(den, ntgts, dead, ix, timeout, logfile):
     else:
         result = cv.compute_values(graph, rm_dominated=True, enum=10)
 
-    io.save_results(ntgts, dead, den, ix, result)
+    # io.save_results(ntgts, dead, den, ix, result)
 
     log.debug("END computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
 
+    return 1
+
 
 if __name__ == '__main__':
+    print os.getpid()
     path = os.path.dirname(os.path.realpath(__file__))
     options = read_opt(sys.argv[1:])
 
-    if len(sys.argv[1:]) >= 4:
+    if len(sys.argv[1:]) >= 8:
         main(*options[:-1])
     else:
         poolname = options[-1] if options[-1] is not None else path +\
