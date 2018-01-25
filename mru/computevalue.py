@@ -26,9 +26,11 @@ class SignalReceiver:
         signal.signal(signal.SIGUSR2, self.avoid_enum)
 
     def exit_gracefully(self, signum, frame):
+        log.info("received kill signal")
         self.kill_now = True
 
-    def avoid_enum(self):
+    def avoid_enum(self, signum, frame):
+        log.info("received jump signal")
         self.jump = True
 
 
