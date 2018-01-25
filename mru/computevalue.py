@@ -2,6 +2,7 @@
 
 import time
 import logging
+import signal
 import numpy as np
 import ILP_solver as sc
 
@@ -14,6 +15,75 @@ from patrolling.correlated import correlated_row_gen as cr
 MTYPE = np.uint8
 
 log = logging.getLogger(__name__)
+
+
+class SignalReceiver:
+    kill_now = False
+    jump = False
+
+    def __init__(self):
+        signal.signal(signal.SIGUSR1, self.exit_gracefully)
+        signal.signal(signal.SIGUSR2, self.avoid_enum)
+
+    def exit_gracefully(self, signum, frame):
+        self.kill_now = True
+
+    def avoid_enum(self):
+        self.jump = True
+
+
+def correlated_solution(resources, covset, tgt_values, sigrec):
+    """ Compute correlated solution for defender with multi resources
+    """
+    n_res = resources.shape[1]
+    road_dict = {k + 1: covset[resources[0, k]]
+                 for k in range(n_res)}
+    st_time = time.time()
+    corrsol = (cr.correlated(road_dict, tgt_values)[0:2] +
+               (resources[0],))
+    comptime = time.time() - st_time
+
+    if not sigrec.jump:
+        log.debug("compute solution for different dispositions of" +
+                  str(n_res) + " resources")
+        for sol in range(1, resources.shape[0]):
+            if sigrec.kill_now:
+                return corrsol, comptime
+            if not sigrec.jump:
+                road_dict = {k + 1: covset[resources[sol, k]]
+                             for k in range(n_res)}
+                solution = cr.correlated(road_dict, tgt_values)
+                if corrsol[0] < solution[0]:
+                    corrsol = (solution[0],
+                               solution[1],
+                               resources[sol])
+    return corrsol, comptime
+
+
+def reformat(solutionlist, max_res_strategy):
+    """ Modify the format to respect compatibility of the solutions
+    """
+    game_values = {}
+    strategies = {}
+    placements = {}
+    max_num_res = len(max_res_strategy)
+    for sol in solutionlist:
+        if sol[0] is not None and\
+           sol[1] is not None and\
+           sol[2] is not None:
+            game_values[sol[2].shape[0]] = sol[0]
+            strategies[sol[2].shape[0]] = sol[1]
+            placements[sol[2].shape[0]] = [
+                (r + 1, p) for r, p in enumerate(sol[2])]
+    if max_res_strategy is not None:
+        placements[max_num_res] = [
+            (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
+        game_values[max_num_res] = 1
+        strategies[max_num_res] = [(
+            [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
+            1.0)]
+
+        return game_values, placements, strategies
 
 
 def compute_values(graph, rm_dominated=False, enum=1):
@@ -40,119 +110,76 @@ def compute_values(graph, rm_dominated=False, enum=1):
                                                            setcover_k,
                                                            )
     """
-    try:
-        log.debug("start compute_values function")
-        start_time = time.time()
-        tgts = graph.getTargets()
-        tgt_values = np.array([v.value for v in graph.vertices])
+    signal_receiver = SignalReceiver()
+    log.debug("start compute_values function")
+    start_time = time.time()
+    tgts = graph.getTargets()
+    tgt_values = np.array([v.value for v in graph.vertices])
 
-        game_values = {}
-        strategies = {}
-        placements = {}
-        solutionlist = []
-        times_list = {}
-        max_res_strategy = None
+    solutionlist = []
+    times_list = {}
+    max_res_strategy = None
 
-        log.debug("compute shortest sets")
+    log.debug("compute shortest sets")
+    st_time = time.time()
+    shortest_matrix = compute_shortest_sets(graph, tgts)
+    times_list[0] = time.time() - st_time
+    log.debug("compute covering routes")
+    st_time = time.time()
+    csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
+    times_list[1] = time.time() - st_time
+
+    # optimum resource game solution
+    log.debug("compute solution with maximum resources")
+    st_time = time.time()
+    max_res_strategy = sc.maximum_resources(csr, tgts)
+    times_list[2] = time.time() - st_time
+    max_num_res = len(max_res_strategy)
+    if signal_receiver.kill_now:
+        form_sol = reformat(solutionlist, max_res_strategy)
+        return form_sol[0], form_sol[1], form_sol[2], times_list
+    if signal_receiver.jump:
+        enum = 1
+
+    # minimum resource game solution
+    log.debug("compute solution with minimum resources")
+    st_time = time.time()
+    min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
+    times_list[3] = time.time() - st_time
+    if signal_receiver.kill_now:
+        form_sol = reformat(solutionlist, max_res_strategy)
+        return form_sol[0], form_sol[1], form_sol[2], times_list
+    min_n_res = min_res.shape[1]
+    if min_n_res < max_num_res:
+        corr_sol, times_list[4] = correlated_solution(min_res, csr, tgt_values,
+                                                      signal_receiver)
+        solutionlist.append(corr_sol)
+        if signal_receiver.kill_now:
+            form_sol = reformat(solutionlist, max_res_strategy)
+            return form_sol[0], form_sol[1], form_sol[2], times_list
+
+    # what happen between
+    times_list[5] = []
+    for i in range(min_n_res + 1, max_num_res):
+        log.debug("compute solution with " + str(i) + " resources")
+        if signal_receiver.jump:
+            enum = 1
         st_time = time.time()
-        shortest_matrix = compute_shortest_sets(graph, tgts)
-        times_list[0] = time.time() - st_time
-        log.debug("compute covering routes")
-        st_time = time.time()
-        csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
-        times_list[1] = time.time() - st_time
+        res = sc.set_cover_solver(shortest_matrix[:, tgts],
+                                  k=i, nsol=enum)
+        corr_sol, comptime = correlated_solution(res, csr, tgt_values,
+                                                 signal_receiver)
+        times_list[5].append(comptime)
+        solutionlist.append(corr_sol)
+        if signal_receiver.kill_now:
+            form_sol = reformat(solutionlist, max_res_strategy)
+            return form_sol[0], form_sol[1], form_sol[2], times_list
 
-        # optimum resource game solution
-        log.debug("compute solution with maximum resources")
-        st_time = time.time()
-        max_res_strategy = sc.maximum_resources(csr, tgts)
-        times_list[2] = time.time() - st_time
-        max_num_res = len(max_res_strategy)
+    times_list[6] = time.time() - start_time
 
-        # minimum resource game solution
-        log.debug("compute solution with minimum resources")
-        st_time = time.time()
-        min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
-        times_list[3] = time.time() - st_time
-        min_n_res = min_res.shape[1]
-        if min_n_res < max_num_res:
-            road_dict = {k + 1: csr[min_res[0, k]]
-                         for k in range(min_n_res)}
-            st_time = time.time()
-            solutionlist.append(cr.correlated(road_dict, tgt_values)[0:2] +
-                                (min_res[0],))
-            times_list[4] = time.time() - st_time
-            log.debug("compute solution for different dispositions of" +
-                      " minimum resources")
-            for sol in range(1, min_res.shape[0]):
-                road_dict = {k + 1: csr[min_res[sol, k]]
-                             for k in range(min_n_res)}
-                solution = cr.correlated(road_dict, tgt_values)
-                if solutionlist[-1][0] < solution[0]:
-                    solutionlist[-1] = (solution[0], solution[1], min_res[sol])
-
-        # what happen between
-        times_list[5] = []
-        for i in range(min_res.shape[1] + 1, max_num_res):
-            log.debug("compute solution with " + str(i) + " resources")
-            st_time = time.time()
-            res = sc.set_cover_solver(shortest_matrix[:, tgts],
-                                      k=i, nsol=enum)
-            times_list[5].append(time.time() - st_time)
-            road_dict = {k + 1: csr[res[0, k]]
-                         for k in range(res.shape[1])}
-            st_time = time.time()
-            solutionlist.append(cr.correlated(road_dict, tgt_values)[0:2] +
-                                (res[0],))
-            times_list[5].append(time.time() - st_time)
-            log.debug("compute solution for different disposition of " +
-                      str(i) + " resources")
-            for sol in range(1, res.shape[0]):
-                road_dict = {k + 1: csr[res[sol, k]]
-                             for k in range(res.shape[1])}
-                solution = cr.correlated(road_dict, tgt_values)
-                if solutionlist[-1][0] < solution[0]:
-                    solutionlist[-1] = (solution[0], solution[1], res[sol])
-
-        times_list[6] = time.time() - start_time
-
-        # change solution format in a more readable ones
-        for sol in solutionlist:
-            game_values[sol[2].shape[0]] = sol[0]
-            strategies[sol[2].shape[0]] = sol[1]
-            placements[sol[2].shape[0]] = [
-                (r + 1, p) for r, p in enumerate(sol[2])]
-
-        placements[max_num_res] = [
-            (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
-        game_values[max_num_res] = 1
-        strategies[max_num_res] = [(
-            [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
-            1.0)]
-
-        return game_values, placements, strategies, times_list
-
-    except (cr.TimeoutException, KeyboardInterrupt) as ex:
-
-        log.exception(ex)
-
-        for sol in solutionlist:
-            if sol[0] is not None and\
-               sol[1] is not None and\
-               sol[2] is not None:
-                game_values[sol[2].shape[0]] = sol[0]
-                strategies[sol[2].shape[0]] = sol[1]
-                placements[sol[2].shape[0]] = [
-                    (r + 1, p) for r, p in enumerate(sol[2])]
-        if max_res_strategy is not None:
-            placements[max_num_res] = [
-                (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
-            game_values[max_num_res] = 1
-            strategies[max_num_res] = [(
-                [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
-                1.0)]
-
-        return game_values, placements, strategies, times_list
+    # change solution format in a more readable ones
+    form_sol = reformat(solutionlist, max_res_strategy)
+    return form_sol[0], form_sol[1], form_sol[2], times_list
 
 
 def compute_shortest_sets(graph_game, targets):
