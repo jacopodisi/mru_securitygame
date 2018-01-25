@@ -81,7 +81,7 @@ def main(den, ntgts, dead, ix, timeout, logfile):
     else:
         result = cv.compute_values(graph, rm_dominated=True, enum=10)
 
-    # io.save_results(ntgts, dead, den, ix, result)
+    io.save_results(ntgts, dead, den, ix, result)
 
     log.debug("END computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
@@ -90,9 +90,17 @@ def main(den, ntgts, dead, ix, timeout, logfile):
 
 
 if __name__ == '__main__':
-    print os.getpid()
     path = os.path.dirname(os.path.realpath(__file__))
     options = read_opt(sys.argv[1:])
+
+    with open(path + "/pidprocesses.txt", "a") as fin:
+        fcntl.flock(fin, fcntl.LOCK_EX)
+        if options[-2] is not None:
+            pidstr = options[-2] + ' pid: ' + str(os.getpid())
+        else:
+            pidstr = 'pid: ' + str(os.getpid())
+        fin.write(pidstr + '\n')
+        fcntl.flock(fin, fcntl.LOCK_UN)
 
     if len(sys.argv[1:]) >= 8:
         main(*options[:-1])
