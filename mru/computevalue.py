@@ -3,6 +3,7 @@
 import time
 import logging
 import signal
+import copy
 import numpy as np
 import ILP_solver as sc
 
@@ -62,21 +63,36 @@ def correlated_solution(resources, covset, tgt_values, sigrec):
     return corrsol, comptime
 
 
-def reformat(solutionlist, max_res_strategy):
+def reformat_strategies(covset, probstrategy, placements):
+    newprobstrategy = copy.deepcopy(probstrategy)
+    for ix, strategy in enumerate(probstrategy):
+        for ixp, player in enumerate(strategy[0]):
+            vertex = placements[player[0] - 1][1]
+            route = covset[vertex][player[1]].toarray()
+            newprobstrategy[ix][0][ixp] = (player[0], route)
+    return newprobstrategy
+
+
+def reformat(solutionlist, max_res_strategy, covset):
     """ Modify the format to respect compatibility of the solutions
     """
     game_values = {}
     strategies = {}
+    strat_r = {}
     placements = {}
     max_num_res = len(max_res_strategy)
     for sol in solutionlist:
+        nres = sol[2].shape[0]
         if sol[0] is not None and\
            sol[1] is not None and\
            sol[2] is not None:
-            game_values[sol[2].shape[0]] = sol[0]
-            strategies[sol[2].shape[0]] = sol[1]
-            placements[sol[2].shape[0]] = [
+            game_values[nres] = sol[0]
+            strategies[nres] = sol[1]
+            placements[nres] = [
                 (r + 1, p) for r, p in enumerate(sol[2])]
+            strat_r[nres] = reformat_strategies(covset,
+                                                strategies[nres],
+                                                placements[nres])
     if max_res_strategy is not None:
         placements[max_num_res] = [
             (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
@@ -84,8 +100,11 @@ def reformat(solutionlist, max_res_strategy):
         strategies[max_num_res] = [(
             [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
             1.0)]
+        strat_r[max_num_res] = reformat_strategies(covset,
+                                                   strategies[max_num_res],
+                                                   placements[max_num_res])
 
-        return game_values, placements, strategies
+    return game_values, placements, strategies, strat_r
 
 
 def compute_values(graph, rm_dominated=False, enum=1):
@@ -138,8 +157,8 @@ def compute_values(graph, rm_dominated=False, enum=1):
     times_list[2] = time.time() - st_time
     max_num_res = len(max_res_strategy)
     if signal_receiver.kill_now:
-        form_sol = reformat(solutionlist, max_res_strategy)
-        return form_sol[0], form_sol[1], form_sol[2], times_list
+        f_sol = reformat(solutionlist, max_res_strategy, csr)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
     if signal_receiver.jump:
         enum = 1
 
@@ -149,16 +168,16 @@ def compute_values(graph, rm_dominated=False, enum=1):
     min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
     times_list[3] = time.time() - st_time
     if signal_receiver.kill_now:
-        form_sol = reformat(solutionlist, max_res_strategy)
-        return form_sol[0], form_sol[1], form_sol[2], times_list
+        f_sol = reformat(solutionlist, max_res_strategy, csr)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
     min_n_res = min_res.shape[1]
     if min_n_res < max_num_res:
         corr_sol, times_list[4] = correlated_solution(min_res, csr, tgt_values,
                                                       signal_receiver)
         solutionlist.append(corr_sol)
         if signal_receiver.kill_now:
-            form_sol = reformat(solutionlist, max_res_strategy)
-            return form_sol[0], form_sol[1], form_sol[2], times_list
+            f_sol = reformat(solutionlist, max_res_strategy, csr)
+            return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
 
     # what happen between
     times_list[5] = []
@@ -174,14 +193,14 @@ def compute_values(graph, rm_dominated=False, enum=1):
         times_list[5].append(comptime)
         solutionlist.append(corr_sol)
         if signal_receiver.kill_now:
-            form_sol = reformat(solutionlist, max_res_strategy)
-            return form_sol[0], form_sol[1], form_sol[2], times_list
+            f_sol = reformat(solutionlist, max_res_strategy, csr)
+            return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
 
     times_list[6] = time.time() - start_time
 
     # change solution format in a more readable ones
-    form_sol = reformat(solutionlist, max_res_strategy)
-    return form_sol[0], form_sol[1], form_sol[2], times_list
+    f_sol = reformat(solutionlist, max_res_strategy, csr)
+    return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
 
 
 def compute_shortest_sets(graph_game, targets):
