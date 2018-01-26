@@ -20,7 +20,8 @@ ndead = {20: [4, 5, 10, 15, 19],
          50: [5, 10]}
 nden = {25: [20, 25, 30, 35, 40, 45, 50],
         10: [20, 25, 30, 35, 40, 45, 50],
-        8: [25, 30, 35, 40, 45, 50]}
+        8: [25, 30],
+        6: [35, 40, 45, 50]}
 
 ntgtsix = {d: ix for ix, d in enumerate(sorted(ndead.keys()))}
 denix = {d: ix for ix, d in enumerate(sorted(nden.keys()))}
@@ -51,7 +52,10 @@ def it(den, tgts):
                      dea == 10 and
                      ist == 4)):
                     return
-                result = io.load_results(tgt, dea, den, ist)
+                try:
+                    result = io.load_results(tgt, dea, den, ist)
+                except IOError:
+                    continue
                 temptimes.append(result[3][6])
                 tempmaxres.append(max(result[0].keys()))
                 tempgameval.append(result[0])
