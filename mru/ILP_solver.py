@@ -24,7 +24,7 @@ def set_cover_solver(sets, k=None, nsol=1):
         m = gu.Model("setcover")
         m.setParam(gu.GRB.Param.OutputFlag, 0)
         # find solutions that are not the best
-        m.setParam(gu.GRB.Param.PoolSearchMode, 1)
+        m.setParam(gu.GRB.Param.PoolSearchMode, 2)
         # Limit how many solutions to collect
         m.setParam(gu.GRB.Param.PoolSolutions, nsol)
         # Limit the search space by setting a gap
