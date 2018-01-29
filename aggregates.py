@@ -28,6 +28,7 @@ denix = {d: ix for ix, d in enumerate(sorted(nden.keys()))}
 deadix = {d: ix for ix, d in enumerate(maxdeadlist)}
 
 timesarr = np.empty((len(deadix), len(ntgtsix), len(denix)), dtype=object)
+timesnoenarr = np.empty((len(deadix), len(ntgtsix), len(denix)), dtype=object)
 maxresarr = np.empty((len(deadix), len(ntgtsix), len(denix)), dtype=object)
 gamevalarr = np.empty((len(deadix), len(ntgtsix), len(denix)), dtype=object)
 
@@ -36,6 +37,7 @@ def it(den, tgts):
     for tgt in tgts:
         for dea in ndead[tgt]:
             temptimes = []
+            temptimesnoen = []
             tempmaxres = []
             tempgameval = []
             for ist in range(nist[tgt]):
@@ -57,9 +59,13 @@ def it(den, tgts):
                 except IOError:
                     continue
                 temptimes.append(result[3][6])
+                temp = (result[3][0] + result[3][1] + result[3][2] +
+                        result[3][3] + result[3][4] + sum(result[3][5]))
+                temptimesnoen.append(temp)
                 tempmaxres.append(max(result[0].keys()))
                 tempgameval.append(result[0])
             timesarr[deadix[dea], ntgtsix[tgt], denix[den]] = temptimes
+            timesnoenarr[deadix[dea], ntgtsix[tgt], denix[den]] = temptimesnoen
             maxresarr[deadix[dea], ntgtsix[tgt], denix[den]] = tempmaxres
             gamevalarr[deadix[dea], ntgtsix[tgt], denix[den]] = tempgameval
     return
@@ -69,6 +75,7 @@ for den, tgts in nden.iteritems():
     it(den, tgts)
 
 timesarr = (timesarr, deadix, ntgtsix, denix)
+timesnoenarr = (timesnoenarr, deadix, ntgtsix, denix)
 maxresarr = (maxresarr, deadix, ntgtsix, denix)
 gamevalarr = (gamevalarr, deadix, ntgtsix, denix)
 # save computational times
@@ -81,6 +88,19 @@ while True:
         with open(fntime, mode='wb') as f:
             pickle.dump(timesarr, f, protocol=pickle.HIGHEST_PROTOCOL)
         print 'Saved times in ' + fntime
+        break
+    fid += 1
+
+# save computational times without enumeration
+fntimenoen = "analysis/aggregate_timesnoen_"
+fid = 0
+while True:
+
+    if not os.path.isfile(fntimenoen + str(fid) + '.pickle'):
+        fntimenoen += str(fid) + '.pickle'
+        with open(fntimenoen, mode='wb') as f:
+            pickle.dump(timesnoenarr, f, protocol=pickle.HIGHEST_PROTOCOL)
+        print 'Saved times in ' + fntimenoen
         break
     fid += 1
 
