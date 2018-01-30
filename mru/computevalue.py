@@ -63,22 +63,11 @@ def correlated_solution(resources, covset, tgt_values, sigrec):
     return corrsol, comptime
 
 
-def reformat_strategies(covset, probstrategy, placements):
-    newprobstrategy = copy.deepcopy(probstrategy)
-    for ix, strategy in enumerate(probstrategy):
-        for ixp, player in enumerate(strategy[0]):
-            vertex = placements[player[0] - 1][1]
-            route = covset[vertex][player[1]].toarray()
-            newprobstrategy[ix][0][ixp] = (player[0], route)
-    return newprobstrategy
-
-
 def reformat(solutionlist, max_res_strategy, covset):
     """ Modify the format to respect compatibility of the solutions
     """
     game_values = {}
     strategies = {}
-    strat_r = {}
     placements = {}
     max_num_res = len(max_res_strategy)
     for sol in solutionlist:
@@ -90,9 +79,6 @@ def reformat(solutionlist, max_res_strategy, covset):
             strategies[nres] = sol[1]
             placements[nres] = [
                 (r + 1, p) for r, p in enumerate(sol[2])]
-            strat_r[nres] = reformat_strategies(covset,
-                                                strategies[nres],
-                                                placements[nres])
     if max_res_strategy is not None:
         placements[max_num_res] = [
             (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
@@ -100,14 +86,11 @@ def reformat(solutionlist, max_res_strategy, covset):
         strategies[max_num_res] = [(
             [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
             1.0)]
-        strat_r[max_num_res] = reformat_strategies(covset,
-                                                   strategies[max_num_res],
-                                                   placements[max_num_res])
 
-    return game_values, placements, strategies, strat_r
+    return game_values, placements, strategies
 
 
-def compute_values(graph, rm_dominated=False, enum=1):
+def compute_values(graph, rm_dominated=False, enum=1, covset=None):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
     Parameters
@@ -145,12 +128,18 @@ def compute_values(graph, rm_dominated=False, enum=1):
     st_time = time.time()
     shortest_matrix = compute_shortest_sets(graph, tgts)
     times_list[0] = time.time() - st_time
-    log.debug("compute covering routes")
-    st_time = time.time()
-    csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
-    times_list[1] = time.time() - st_time
+    if covset is None:
+        log.debug("compute covering routes")
+        st_time = time.time()
+        csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
+        times_list[1] = time.time() - st_time
+    else:
+        csr = covset
 
     # optimum resource game solution
+    if signal_receiver.kill_now:
+        f_sol = reformat(solutionlist, max_res_strategy, csr)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr
     log.debug("compute solution with maximum resources")
     st_time = time.time()
     max_res_strategy = sc.maximum_resources(csr, tgts)
@@ -158,7 +147,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
     max_num_res = len(max_res_strategy)
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, max_res_strategy, csr)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr
     if signal_receiver.jump:
         enum = 1
 
@@ -169,7 +158,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
     times_list[3] = time.time() - st_time
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, max_res_strategy, csr)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr
     min_n_res = min_res.shape[1]
     if min_n_res < max_num_res:
         corr_sol, times_list[4] = correlated_solution(min_res, csr, tgt_values,
@@ -177,7 +166,7 @@ def compute_values(graph, rm_dominated=False, enum=1):
         solutionlist.append(corr_sol)
         if signal_receiver.kill_now:
             f_sol = reformat(solutionlist, max_res_strategy, csr)
-            return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
+            return f_sol[0], f_sol[1], f_sol[2], times_list, csr
 
     # what happen between
     times_list[5] = []
@@ -194,13 +183,13 @@ def compute_values(graph, rm_dominated=False, enum=1):
         solutionlist.append(corr_sol)
         if signal_receiver.kill_now:
             f_sol = reformat(solutionlist, max_res_strategy, csr)
-            return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
+            return f_sol[0], f_sol[1], f_sol[2], times_list, csr
 
     times_list[6] = time.time() - start_time
 
     # change solution format in a more readable ones
     f_sol = reformat(solutionlist, max_res_strategy, csr)
-    return f_sol[0], f_sol[1], f_sol[2], times_list, f_sol[3]
+    return f_sol[0], f_sol[1], f_sol[2], times_list, csr
 
 
 def compute_shortest_sets(graph_game, targets):
