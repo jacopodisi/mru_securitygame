@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_meantimes(dead, den):
+def plot_meantimes(dead, den, save=False):
     timesfile = "aggregate_times_0.pickle"
     with open(timesfile, mode='r') as f:
         timestuple = pickle.load(f)
@@ -27,10 +27,13 @@ def plot_meantimes(dead, den):
     plt.xlabel('# of targets')
     plt.ylabel('mean computation time')
 
+    if save:
+        plt.savefig("figures/meantimes" + str(dead) + "_" + str(den) + ".svg")
+
     plt.show()
 
 
-def plot_meantimesnoenum(dead, den):
+def plot_meantimesnoenum(dead, den, save=False):
     timesfile = "aggregate_timesnoen_0.pickle"
     with open(timesfile, mode='r') as f:
         timestuple = pickle.load(f)
@@ -53,10 +56,13 @@ def plot_meantimesnoenum(dead, den):
     plt.xlabel('# of targets')
     plt.ylabel('computation time wihtout enumeration')
 
+    if save:
+        plt.savefig("figures/meantimesnoenum" + str(dead) + "_" + str(den) + ".svg")
+
     plt.show()
 
 
-def plot_maxres(dead, den):
+def plot_maxres(dead, den, save=False):
     maxresfile = "aggregate_maxres_0.pickle"
     with open(maxresfile, mode='r') as f:
         maxrestuple = pickle.load(f)
@@ -79,10 +85,13 @@ def plot_maxres(dead, den):
     plt.xlabel('# of targets')
     plt.ylabel('optimal num of resources')
 
+    if save:
+        plt.savefig("figures/maxres" + str(dead) + "_" + str(den) + ".svg")
+
     plt.show()
 
 
-def plot_gamevalue(dead, den, ntgts, ix):
+def plot_gamevalue(dead, den, ntgts, ix, save=False):
     gamevalsfile = "aggregate_gamevals_0.pickle"
     with open(gamevalsfile, mode='r') as f:
         gamevalstuple = pickle.load(f)
@@ -103,13 +112,19 @@ def plot_gamevalue(dead, den, ntgts, ix):
         plt.xlabel('# of resources')
         plt.ylabel('game value')
 
+        if save:
+            plt.savefig("figures/utility" + str(dead) + "_" +
+                        str(den) + "_" +
+                        str(ntgts) + "_" +
+                        str(ix) + ".svg")
+
         plt.show()
 
     else:
         print 'results not yet computed'
 
 
-def plot_margin(dead, den, ntgts, ix, costres):
+def plot_margin(dead, den, ntgts, ix, costres, save=False):
     gamevalsfile = "aggregate_gamevals_0.pickle"
     with open(gamevalsfile, mode='r') as f:
         gamevalstuple = pickle.load(f)
@@ -130,6 +145,12 @@ def plot_margin(dead, den, ntgts, ix, costres):
 
         plt.xlabel('# of resources')
         plt.ylabel('margin')
+
+        if save:
+            plt.savefig("figures/margin" + str(dead) + "_" +
+                        str(den) + "_" +
+                        str(ntgts) + "_" +
+                        str(ix) + ".svg")
 
         plt.show()
 
