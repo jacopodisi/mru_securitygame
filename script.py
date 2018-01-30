@@ -55,7 +55,7 @@ def read_opt(str_opt):
 
 def main(den, ntgts, dead, ix, timeout, logfile):
 
-    enum = 20
+    enum = 10
 
     if not (den and ntgts and dead and ix):
         print 'Value error: not defined every options of graph'
