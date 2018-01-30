@@ -47,7 +47,7 @@ def correlated_solution(resources, covset, tgt_values, sigrec):
     comptime = time.time() - st_time
 
     if not sigrec.jump:
-        log.debug("compute solution for different dispositions of" +
+        log.debug("compute solution for different dispositions of " +
                   str(n_res) + " resources")
         for sol in range(1, resources.shape[0]):
             if sigrec.kill_now:
