@@ -55,6 +55,8 @@ def read_opt(str_opt):
 
 def main(den, ntgts, dead, ix, timeout, logfile):
 
+    enum = 20
+
     if not (den and ntgts and dead and ix):
         print 'Value error: not defined every options of graph'
         return 0
@@ -75,11 +77,25 @@ def main(den, ntgts, dead, ix, timeout, logfile):
 
     log.debug("START computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
+
+    try:
+        oldres = io.load_results(ntgts, dead, den, ix)
+        if len(oldres) > 4:
+            covset = oldres[4]
+    except IOError:
+        covset = None
+
     if timeout:
         with cr.time_limit(36000):
-            result = cv.compute_values(graph, rm_dominated=True, enum=10)
+            result = cv.compute_values(graph,
+                                       rm_dominated=True,
+                                       enum=enum,
+                                       covset=covset)
     else:
-        result = cv.compute_values(graph, rm_dominated=True, enum=10)
+        result = cv.compute_values(graph,
+                                   rm_dominated=True,
+                                   enum=enum,
+                                   covset=covset)
 
     io.save_results(ntgts, dead, den, ix, result)
 
@@ -106,7 +122,7 @@ if __name__ == '__main__':
         main(*options[:-1])
     else:
         poolname = options[-1] if options[-1] is not None else path +\
-            '/pool.txt'
+            '/pool2.txt'
         logfile = options[-2]
         if not os.path.isfile(poolname):
             m = 'File {} do not exist'.format(poolname)
