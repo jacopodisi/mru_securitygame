@@ -129,14 +129,15 @@ def save_results(ntgts, dead, den, gix, result):
     return fn
 
 
-def load_results(ntgts, dead, den, gix):
+def load_results(ntgts, dead, den, gix, resix=0):
 
     ntgts = str(ntgts)
     dead = str(dead)
     den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
+    resix = str(resix)
     res_path = "results/res_graphs_" + ntgts + "_ntgts/res_instance_ntgts_"\
                + ntgts + "_den_" + den + "_dead_" + dead + "_graphix_"\
-               + gix + "_ix_0"
+               + gix + "_ix_" + resix
 
     return load_file(FILEDIR + res_path + ".pickle")
