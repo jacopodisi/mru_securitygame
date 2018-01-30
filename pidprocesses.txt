@@ -1,0 +1,16 @@
+logcorepool4.log pid: 38416
+logcorepool16.log pid: 38911
+logcorepool5.log pid: 38410
+logcorepool15.log pid: 38632
+logcorepool8.log pid: 38425
+logcorepool3.log pid: 38403
+logcorepool2.log pid: 38418
+logcorepool10.log pid: 38634
+logcorepool13.log pid: 38519
+logcorepool7.log pid: 38456
+logcorepool11.log pid: 38484
+logcorepool14.log pid: 38587
+logcorepool12.log pid: 38495
+logcorepool6.log pid: 38428
+logcorepool9.log pid: 38520
+logcorepool1.log pid: 6614
