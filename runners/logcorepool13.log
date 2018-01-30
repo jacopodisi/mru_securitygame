@@ -1,4 +1,0 @@
-[2018-01-26 15:11:22.321] [DEBUG   ] --- START computation for graph 40 10 0.6 1 (__main__:77)
-[2018-01-26 15:11:22.322] [DEBUG   ] --- start compute_values function (mru.computevalue:135)
-[2018-01-26 15:11:22.322] [DEBUG   ] --- compute shortest sets (mru.computevalue:144)
-[2018-01-26 15:11:22.345] [DEBUG   ] --- compute covering routes (mru.computevalue:148)
