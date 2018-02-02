@@ -101,7 +101,7 @@ class TestComputeValue1(unittest.TestCase):
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        game_val, plac, strat, _ = cv.compute_values(self.G, True)
+        game_val, plac, strat, _, _ = cv.compute_values(self.G, True)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
         res_game_val = {1: 1}
         res_plac = {1: [(1, 4)]}
@@ -181,7 +181,7 @@ class TestComputeValue2(unittest.TestCase):
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        game_val, plac, strat, _ = cv.compute_values(self.G, True)
+        game_val, plac, strat, _, _ = cv.compute_values(self.G, True)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
         res_game_val = {4: 1}
         res_plac = {4: [(1, 1), (2, 2), (3, 3), (4, 4)]}
@@ -276,7 +276,7 @@ class TestComputeValue3(unittest.TestCase):
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        game_val, plac, strat, _ = cv.compute_values(self.G, True)
+        game_val, plac, strat, _, _ = cv.compute_values(self.G, True)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
         res_game_val = {1: 1}
         res_plac = {1: [(1, 2)]}
@@ -367,7 +367,7 @@ class TestComputeValue4(unittest.TestCase):
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        game_val, plac, strat, _ = cv.compute_values(self.G, True, enum=10)
+        game_val, plac, strat, _, _ = cv.compute_values(self.G, True, enum=10)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
         res_game_val = {1: 0.75, 2: 1}
         res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 4)]}
@@ -474,7 +474,7 @@ class TestComputeValue5(unittest.TestCase):
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        game_val, plac, strat, _ = cv.compute_values(self.G, True, enum=10)
+        game_val, plac, strat, _, _ = cv.compute_values(self.G, True, enum=10)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
         res_game_val = {1: 0.5, 2: 0.75, 3: 1}
         res_plac = {1: [(1, 6)], 2: [(1, 1), (2, 2)],
@@ -560,7 +560,7 @@ class TestComputeValue6(unittest.TestCase):
 
     def test_compute_values(self):
         f = cv.compute_values
-        game_val, plac, strat, _ = f(self.G)
+        game_val, plac, strat, _, _ = f(self.G)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
 
         res_game_val = {1: 0.75, 2: 1}
@@ -573,7 +573,7 @@ class TestComputeValue6(unittest.TestCase):
         self.assertEqual(strat[2], res_strat[2], msg=ms)
 
     def test_compute_values_dom(self):
-        game_val, plac, strat, _ = cv.compute_values(self.G, True)
+        game_val, plac, strat, _, _ = cv.compute_values(self.G, True)
         ms = str(game_val) + '\n' + str(plac) + '\n' + str(strat)
         res_game_val = {1: 0.75, 2: 1}
         res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}

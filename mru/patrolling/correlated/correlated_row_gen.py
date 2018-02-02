@@ -114,7 +114,7 @@ def correlated(I, target_values):
         if prob > 0:
             strategy_profile.append((selected_routes[joint_route_id], prob_array[joint_route_id]))
 
-    return defender_final[0], strategy_profile, n_iter
+    return defender_final[0], strategy_profile, n_iter, attacker_tupla[1]
 
 
 def update_joint_I(I_joint, selected_routes, new_joint_routes_list, I):

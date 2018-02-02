@@ -8,7 +8,7 @@ VMAT = np.uint16
 RMAT = np.uint32
 
 
-def set_cover_solver(sets, k=None, nsol=1):
+def set_cover_solver(sets, k=None, nsol=1, place=None):
     """ solve the linear integer programming problem using gurobi solver
     Parameters
     ----------
@@ -19,6 +19,7 @@ def set_cover_solver(sets, k=None, nsol=1):
     ------
     res: list of indices of sets in the set_cover optimum
     """
+    solutions = None
     try:
 
         m = gu.Model("setcover")
@@ -60,6 +61,9 @@ def set_cover_solver(sets, k=None, nsol=1):
             # CONSTRAINT
             m.addConstr(gu.quicksum(variables) == k)
 
+        if place is not None:
+            m.addConstr(variables[place] == 1)
+
         m.optimize()
 
         try:
@@ -80,13 +84,13 @@ def set_cover_solver(sets, k=None, nsol=1):
                     solutions[e, i] = iset
                     i += 1
 
-        return solutions
+        return solutions, True
 
     except gu.GurobiError:
         stat = m.getAttr(gu.GRB.Attr.Status)
         print 'Error while computing the set cover optimization problem'
-        if stat == 3:
-            print 'Infeasible solution'
+        if stat == 3 and place is not None:
+            return solutions, False
         else:
             print 'Gurobi Status after the optim: ', stat
         raise
@@ -120,7 +124,7 @@ def maximum_resources(csr_matrices, targets):
         vertex_list = np.append(vertex_list, t_veli)
         t_covli = np.arange(arr.shape[0], dtype=RMAT)
         covset_list = np.append(covset_list, t_covli)
-    mat_ix = set_cover_solver(mat[:, targets])[0]
+    mat_ix, _ = set_cover_solver(mat[:, targets])[0]
     return zip(vertex_list[mat_ix], covset_list[mat_ix])
 
 
@@ -145,11 +149,11 @@ def local_search(matrix, deadlines, number_of_resources):
 
 if __name__ == '__main__':
     matri = [[1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-           [0, 1, 0, 1, 0, 1, 0, 1, 0, 0],
-           [1, 1, 1, 1, 1, 0, 0, 0, 0, 1],
-           [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]]
+             [0, 1, 0, 1, 0, 1, 0, 1, 0, 0],
+             [1, 1, 1, 1, 1, 0, 0, 0, 0, 1],
+             [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]]
     matri = np.array(matri)
-    min0 = set_cover_solver(matri, nsol=6)
+    min0, _ = set_cover_solver(matri, nsol=6)
     # min1 = set_cover_solver(matri, k=(len(min0) + 1), nsol=6)
     print min0
     # print min1

@@ -2,10 +2,10 @@
 
 import time
 import logging
-import signal
-import copy
 import numpy as np
 import ILP_solver as sc
+import signal_receiver as sr
+import placement_enum as pe
 
 from scipy import sparse
 from srg import computecovsets as cs
@@ -16,23 +16,6 @@ from patrolling.correlated import correlated_row_gen as cr
 MTYPE = np.uint8
 
 log = logging.getLogger(__name__)
-
-
-class SignalReceiver:
-    kill_now = False
-    jump = False
-
-    def __init__(self):
-        signal.signal(signal.SIGUSR1, self.exit_gracefully)
-        signal.signal(signal.SIGUSR2, self.avoid_enum)
-
-    def exit_gracefully(self, signum, frame):
-        log.info("received kill signal")
-        self.kill_now = True
-
-    def avoid_enum(self, signum, frame):
-        log.info("received jump signal")
-        self.jump = True
 
 
 def correlated_solution(resources, covset, tgt_values, sigrec):
@@ -90,13 +73,13 @@ def reformat(solutionlist, max_res_strategy, covset):
     return game_values, placements, strategies
 
 
-def compute_values(graph, rm_dominated=False, enum=1, covset=None):
+def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
     Parameters
     ----------
     graph: instance of gr.Graph class
-    rm_dominated: If set to True the dominanted route for each vertex
+    rm_dom: If set to True the dominanted route for each vertex
                   are eliminated
 
     Return
@@ -113,8 +96,9 @@ def compute_values(graph, rm_dominated=False, enum=1, covset=None):
                                                            correlated min,
                                                            setcover_k,
                                                            )
+    csr: covering sets of every node
     """
-    signal_receiver = SignalReceiver()
+    signal_receiver = sr.SignalReceiver(log)
     log.debug("start compute_values function")
     start_time = time.time()
     tgts = graph.getTargets()
@@ -131,7 +115,7 @@ def compute_values(graph, rm_dominated=False, enum=1, covset=None):
     if covset is None:
         log.debug("compute covering routes")
         st_time = time.time()
-        csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dominated)
+        csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dom)
         times_list[1] = time.time() - st_time
     else:
         csr = covset
@@ -151,22 +135,26 @@ def compute_values(graph, rm_dominated=False, enum=1, covset=None):
     if signal_receiver.jump:
         enum = 1
 
+    enumfunc = pe.enumfunction(enumtype=1, covset=csr,
+                               tgt_values=tgt_values,
+                               sigrec=signal_receiver,
+                               log=log, enum=enum,
+                               short_set=shortest_matrix,
+                               maxnumres=max_num_res)
     # minimum resource game solution
     log.debug("compute solution with minimum resources")
     st_time = time.time()
-    min_res = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
+    min_res, _ = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
     times_list[3] = time.time() - st_time
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, max_res_strategy, csr)
         return f_sol[0], f_sol[1], f_sol[2], times_list, csr
-    min_n_res = min_res.shape[1]
-    if min_n_res < max_num_res:
-        corr_sol, times_list[4] = correlated_solution(min_res, csr, tgt_values,
-                                                      signal_receiver)
-        solutionlist.append(corr_sol)
-        if signal_receiver.kill_now:
-            f_sol = reformat(solutionlist, max_res_strategy, csr)
-            return f_sol[0], f_sol[1], f_sol[2], times_list, csr
+
+    corr_sol, times_list[3], times_list[4] = enumfunc()
+    solutionlist.append(corr_sol)
+    if signal_receiver.kill_now:
+        f_sol = reformat(solutionlist, max_res_strategy, csr)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr
 
     # what happen between
     times_list[5] = []
@@ -175,10 +163,10 @@ def compute_values(graph, rm_dominated=False, enum=1, covset=None):
         if signal_receiver.jump:
             enum = 1
         st_time = time.time()
-        res = sc.set_cover_solver(shortest_matrix[:, tgts],
-                                  k=i, nsol=enum)
-        corr_sol, comptime = correlated_solution(res, csr, tgt_values,
-                                                 signal_receiver)
+        res, _ = sc.set_cover_solver(shortest_matrix[:, tgts],
+                                     k=i, nsol=enum)
+        corr_sol, comptime = pe.correlated_solution(res, csr, tgt_values,
+                                                    signal_receiver, log)
         times_list[5].append(comptime)
         solutionlist.append(corr_sol)
         if signal_receiver.kill_now:
