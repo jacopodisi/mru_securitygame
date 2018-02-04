@@ -92,11 +92,8 @@ def compute_nx_graph(graph):
     return gr, pos
 
 
-def plot_values(values, x_label='# resources', y_label='expected utility'):
-    val = sorted(values.items())
+def plot_values(result, x_label='# resources', y_label='expected utility'):
+    val = sorted(result[0].items())
     x, y = zip(*val)
 
-    plt.plot(x, y)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.show()
+    return x, y
