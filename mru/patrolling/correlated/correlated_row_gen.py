@@ -59,7 +59,9 @@ def correlated(I, target_values):
     Return
     ------
     value of the game, strategy of the team list of tuples ([(pl, route number), ...] , probability)
-        (only joint strategies played with prob>0 are listed), number of iterations
+        (only joint strategies played with prob>0 are listed), number of iterations, attacker strategy
+    NB
+    --
     """
     # coverage matrix of selected joint routes
     I_joint=lil_matrix((0,len(target_values)),dtype='int8')
