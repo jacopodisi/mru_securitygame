@@ -88,11 +88,12 @@ def set_cover_solver(sets, k=None, nsol=1, place=None):
 
     except gu.GurobiError:
         stat = m.getAttr(gu.GRB.Attr.Status)
-        print 'Error while computing the set cover optimization problem'
         if stat == 3 and place is not None:
             return solutions, False
+        elif stat == 3:
+            print 'Error while computing the set cover optimization problem'
         else:
-            print 'Gurobi Status after the optim: ', stat
+            print 'Gurobi Status after the optimization: ', stat
         raise
 
 
@@ -124,7 +125,10 @@ def maximum_resources(csr_matrices, targets):
         vertex_list = np.append(vertex_list, t_veli)
         t_covli = np.arange(arr.shape[0], dtype=RMAT)
         covset_list = np.append(covset_list, t_covli)
-    mat_ix, _ = set_cover_solver(mat[:, targets])[0]
+    mat_ix, isok = set_cover_solver(mat[:, targets])
+    if not isok:
+        raise gu.GurobiError("GurobiError", 3)
+    mat_ix = mat_ix[0]
     return zip(vertex_list[mat_ix], covset_list[mat_ix])
 
 
@@ -153,7 +157,7 @@ if __name__ == '__main__':
              [1, 1, 1, 1, 1, 0, 0, 0, 0, 1],
              [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]]
     matri = np.array(matri)
-    min0, _ = set_cover_solver(matri, nsol=6)
+    min0, _ = set_cover_solver(matri, k=2, nsol=1, place=1)
     # min1 = set_cover_solver(matri, k=(len(min0) + 1), nsol=6)
     print min0
     # print min1
