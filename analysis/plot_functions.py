@@ -49,6 +49,8 @@ def plot_meantimesnoenum(dead, den, save=False):
         if li is not None:
             ntgts.append(ntgtsix.keys()[ntgtsix.values().index(ix)])
             meantime.append(np.mean(li))
+
+    return ntgts, meantime
     plt.plot(ntgts, meantime)
     ax = plt.gca()
     ax.grid(which='both')
