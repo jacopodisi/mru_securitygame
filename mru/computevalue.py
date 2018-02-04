@@ -18,35 +18,7 @@ MTYPE = np.uint8
 log = logging.getLogger(__name__)
 
 
-def correlated_solution(resources, covset, tgt_values, sigrec):
-    """ Compute correlated solution for defender with multi resources
-    """
-    n_res = resources.shape[1]
-    road_dict = {k + 1: covset[resources[0, k]]
-                 for k in range(n_res)}
-    st_time = time.time()
-    corrsol = (cr.correlated(road_dict, tgt_values)[0:2] +
-               (resources[0],))
-    comptime = time.time() - st_time
-
-    if not sigrec.jump:
-        log.debug("compute solution for different dispositions of " +
-                  str(n_res) + " resources")
-        for sol in range(1, resources.shape[0]):
-            if sigrec.kill_now:
-                return corrsol, comptime
-            if not sigrec.jump:
-                road_dict = {k + 1: covset[resources[sol, k]]
-                             for k in range(n_res)}
-                solution = cr.correlated(road_dict, tgt_values)
-                if corrsol[0] < solution[0]:
-                    corrsol = (solution[0],
-                               solution[1],
-                               resources[sol])
-    return corrsol, comptime
-
-
-def reformat(solutionlist, max_res_strategy, covset):
+def reformat(solutionlist, max_res_strategy):
     """ Modify the format to respect compatibility of the solutions
     """
     game_values = {}
@@ -97,6 +69,8 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
                                                            setcover_k,
                                                            )
     csr: covering sets of every node
+    iter_sol: dictionary of type {"num_resources":
+                                  num_solution_iterated, ...}
     """
     signal_receiver = sr.SignalReceiver(log)
     log.debug("start compute_values function")
@@ -106,6 +80,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
 
     solutionlist = []
     times_list = {}
+    num_iter = {}
     max_res_strategy = None
 
     log.debug("compute shortest sets")
@@ -122,62 +97,59 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
 
     # optimum resource game solution
     if signal_receiver.kill_now:
-        f_sol = reformat(solutionlist, max_res_strategy, csr)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr
+        f_sol = reformat(solutionlist, max_res_strategy)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
     log.debug("compute solution with maximum resources")
     st_time = time.time()
     max_res_strategy = sc.maximum_resources(csr, tgts)
     times_list[2] = time.time() - st_time
     max_num_res = len(max_res_strategy)
-    if signal_receiver.kill_now:
-        f_sol = reformat(solutionlist, max_res_strategy, csr)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr
-    if signal_receiver.jump:
-        enum = 1
 
-    enumfunc = pe.enumfunction(enumtype=1, covset=csr,
+    if signal_receiver.kill_now:
+        f_sol = reformat(solutionlist, max_res_strategy)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
+
+    enumfunc = pe.enumfunction(enumtype=enumtype, covset=csr,
                                tgt_values=tgt_values,
                                sigrec=signal_receiver,
-                               log=log, enum=enum,
+                               enum=enum,
                                short_set=shortest_matrix,
                                maxnumres=max_num_res)
+
     # minimum resource game solution
     log.debug("compute solution with minimum resources")
     st_time = time.time()
-    min_res, _ = sc.set_cover_solver(shortest_matrix[:, tgts], nsol=enum)
-    times_list[3] = time.time() - st_time
-    if signal_receiver.kill_now:
-        f_sol = reformat(solutionlist, max_res_strategy, csr)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr
+    best_enum_sol = enumfunc()
+    if best_enum_sol[0] is not None:
+        corr_sol, num_iter[corr_sol[2].shape[0]] = best_enum_sol
+        times_list[4] = time.time() - st_time
+        min_num_res = corr_sol[2].shape[0]
+        solutionlist.append(corr_sol)
+    else:
+        min_num_res = max_num_res
 
-    corr_sol, times_list[3], times_list[4] = enumfunc()
-    solutionlist.append(corr_sol)
     if signal_receiver.kill_now:
-        f_sol = reformat(solutionlist, max_res_strategy, csr)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr
+        f_sol = reformat(solutionlist, max_res_strategy)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
 
     # what happen between
     times_list[5] = []
-    for i in range(min_n_res + 1, max_num_res):
+    for i in range(min_num_res + 1, max_num_res):
         log.debug("compute solution with " + str(i) + " resources")
-        if signal_receiver.jump:
-            enum = 1
         st_time = time.time()
-        res, _ = sc.set_cover_solver(shortest_matrix[:, tgts],
-                                     k=i, nsol=enum)
-        corr_sol, comptime = pe.correlated_solution(res, csr, tgt_values,
-                                                    signal_receiver, log)
-        times_list[5].append(comptime)
+        corr_sol, num_iter[i] = enumfunc(n_res=i)
+        times_list[5].append(time.time() - st_time)
         solutionlist.append(corr_sol)
+
         if signal_receiver.kill_now:
-            f_sol = reformat(solutionlist, max_res_strategy, csr)
-            return f_sol[0], f_sol[1], f_sol[2], times_list, csr
+            f_sol = reformat(solutionlist, max_res_strategy)
+            return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
 
     times_list[6] = time.time() - start_time
 
     # change solution format in a more readable ones
-    f_sol = reformat(solutionlist, max_res_strategy, csr)
-    return f_sol[0], f_sol[1], f_sol[2], times_list, csr
+    f_sol = reformat(solutionlist, max_res_strategy)
+    return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
 
 
 def compute_shortest_sets(graph_game, targets):
