@@ -10,8 +10,8 @@ log = logging.getLogger(__name__)
 
 def enumfunction(enumtype=None, covset=None, maxnumres=None,
                  tgt_values=None, sigrec=None,
-                 enum=None, short_set=None):
-    """ function that given the a code (1, 2 or 3) return the corresponding
+                 enum=1, short_set=None):
+    """ Function that given the a code (1, 2 or 3) return the corresponding
         function used to enumerate the solutions.
     Parameters
     ----------
@@ -21,7 +21,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
     sigrec: instance of signal receiver
     short_set: shortest set of every node
     maxnumres: maximum number of resources (optional)
-    enum: number of disposition to analyze (default 1)
+    enum: number of solution to iterate to find the best one
 
     Return
     ------
@@ -48,18 +48,12 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         if maxnumres is not None and n_res == maxnumres:
             return None, None
 
-        sets_dict = {k + 1: covset[res[0, k]] for k in range(n_res)}
-        tempcorrsol = cr.correlated(sets_dict, tgt_values)
-        bestsol = (tempcorrsol[0:2] + (res[0],))
-        num_iter += 1
+        bestsol = -1, None, None
 
         log.debug("compute solution for different dispositions of " +
                   str(n_res) + " resources")
-        for sol in range(1, res.shape[0]):
-            if sigrec.kill_now:
-                return bestsol, num_iter
-            if sigrec.jump:
-                break
+
+        for sol in range(0, res.shape[0]):
             sets_dict = {k + 1: covset[res[sol, k]]
                          for k in range(n_res)}
             solution = cr.correlated(sets_dict, tgt_values)
@@ -67,6 +61,10 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                 bestsol = (solution[0],
                            solution[1],
                            res[sol])
+            if sigrec.kill_now:
+                return bestsol, num_iter
+            if sigrec.jump:
+                break
             num_iter += 1
         return bestsol, num_iter
 
@@ -88,9 +86,9 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
         # compute correlated solution with initial placement
         sets_dict = {k + 1: covset[res[0, k]] for k in range(n_res)}
-        tempcorrsol = cr.correlated(sets_dict, tgt_values)
-        att_strat = np.array(tempcorrsol[3])
-        bestsol = (tempcorrsol[0:2] + (placement_hist[-1],))
+        solution = cr.correlated(sets_dict, tgt_values)
+        att_strat = np.array(solution[3])
+        bestsol = (solution[0:2] + (placement_hist[-1],))
         num_iter += 1
 
         # update placement history and list of placements to analyze
@@ -101,43 +99,40 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                   str(n_res) + " resources")
 
         while True:
-            if sigrec.kill_now:
-                return bestsol, num_iter
-            if sigrec.jump or num_iter == enum:
-                break
-            # choose a random attacked node
-            r = np.random.randint(len(new_placements))
-            p = new_placements[r]
-            # remove the chose node from the list
-            new_placements = np.delete(new_placements, [r])
-            # try to solve the set cover with a placed resource
-            p_res, isok = sc.set_cover_solver(short_set[:, tgts],
-                                              k=n_res, place=p)
-            # check if a cover exist or if it is not already visited
-            if isok and not np.any(np.all(placement_hist == p_res[0], axis=1)):
-                # solve the game with the computed resources
-                temp_dict = {k + 1: covset[p_res[0, k]] for k in range(n_res)}
-                tempcorrsol = cr.correlated(temp_dict, tgt_values)
-                # update placement to history
+
+            for _ in range(len(new_placements)):
+                if (sigrec.kill_now or
+                        sigrec.jump or
+                        num_iter == enum or
+                        new_placements.size == 0):
+                    break
+                # pop a random node from the attacked ones
+                r = np.random.randint(len(new_placements))
+                p = new_placements[r]
+                new_placements = np.delete(new_placements, [r])
+                # solve the set cover with a placed resource
+                p_res, isok = sc.set_cover_solver(short_set[:, tgts],
+                                                  k=n_res, place=p)
+                if (not isok or
+                        np.any(np.all(placement_hist == p_res[0], axis=1))):
+                    continue
                 placement_hist = np.vstack((placement_hist, p_res))
-                # update the best solution
-                if tempcorrsol[0] >= bestsol[0]:
-                    bestsol = (tempcorrsol[0:2] + (placement_hist[-1],))
-                    att_strat = np.array(tempcorrsol[3])
+                res_dict = {k + 1: covset[p_res[0, k]] for k in range(n_res)}
+                solution = cr.correlated(res_dict, tgt_values)
                 num_iter += 1
+                if solution[0] <= bestsol[0]:
+                    continue
+                bestsol = (solution[0:2] + (placement_hist[-1],))
+                att_strat = np.array(solution[3])
 
-            # last cycle
-            if new_placements.size == 0:
-                # update the list of attacked node with the ones
-                # in the best solution. When the algorithm end,
-                # the list 'new_placements' will be empty, and the
-                # cycle will not start (every attacked node will be present
-                # in history.
-                att_strat[att_hist == 1] = 0
-                new_placements = att_strat.nonzero()[0]
-                att_hist[new_placements] = 1
+            att_strat[att_hist == 1] = 0
+            new_placements = att_strat.nonzero()[0]
+            att_hist[new_placements] = 1
 
-            if new_placements.size == 0:
+            if (sigrec.kill_now or
+                    sigrec.jump or
+                    num_iter == enum or
+                    new_placements.size == 0):
                 break
 
         return bestsol, num_iter
@@ -153,7 +148,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
     if enumtype == 1:
         return gurobi_pool
-    elif enumtype == 2 and enum is not None:
+    elif enumtype == 2:
         return double_oracle
     else:
         raise ValueError('Enumeration type ' + str(enumtype) +
