@@ -1,20 +1,20 @@
 #!/bin/sh
-screen -dmS core01scr
-screen -S core01scr -p 0 -X stuff 'python ../script.py -l logcorepool1.log\n'
-screen -dmS core02scr
-screen -S core02scr -p 0 -X stuff 'python ../script.py -l logcorepool2.log\n'
-screen -dmS core03scr
-screen -S core03scr -p 0 -X stuff 'python ../script.py -l logcorepool3.log\n'
-screen -dmS core04scr
-screen -S core04scr -p 0 -X stuff 'python ../script.py -l logcorepool4.log\n'
-screen -dmS core05scr
-screen -S core05scr -p 0 -X stuff 'python ../script.py -l logcorepool5.log\n'
-# screen -dmS core06scr
-# screen -S core06scr -p 0 -X stuff 'python ../script.py -l logcorepool6.log\n'
-# screen -dmS core07scr
-# screen -S core07scr -p 0 -X stuff 'python ../script.py -l logcorepool7.log\n'
-# screen -dmS core08scr
-# screen -S core08scr -p 0 -X stuff 'python ../script.py -l logcorepool8.log\n'
+# screen -dmS core01scr
+# screen -S core01scr -p 0 -X stuff 'python ../script.py -l logcorepool1.log\n'
+# screen -dmS core02scr
+# screen -S core02scr -p 0 -X stuff 'python ../script.py -l logcorepool2.log\n'
+# screen -dmS core03scr
+# screen -S core03scr -p 0 -X stuff 'python ../script.py -l logcorepool3.log\n'
+# screen -dmS core04scr
+# screen -S core04scr -p 0 -X stuff 'python ../script.py -l logcorepool4.log\n'
+# screen -dmS core05scr
+# screen -S core05scr -p 0 -X stuff 'python ../script.py -l logcorepool5.log\n'
+screen -dmS core06scr
+screen -S core06scr -p 0 -X stuff 'python ../script.py -l logcorepool6.log\n'
+screen -dmS core07scr
+screen -S core07scr -p 0 -X stuff 'python ../script.py -l logcorepool7.log\n'
+screen -dmS core08scr
+screen -S core08scr -p 0 -X stuff 'python ../script.py -l logcorepool8.log\n'
 # screen -dmS core09scr
 # screen -S core09scr -p 0 -X stuff 'python ../script.py -l logcorepool9.log\n'
 # screen -dmS core10scr
