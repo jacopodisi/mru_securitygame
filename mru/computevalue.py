@@ -53,6 +53,9 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     graph: instance of gr.Graph class
     rm_dom: If set to True the dominanted route for each vertex
                   are eliminated
+    enum: number of solution to iterate to find the best one
+    covset: covering set (if already computed)
+    enumtype: type of algorithm used to iterate through different solutions
 
     Return
     ------

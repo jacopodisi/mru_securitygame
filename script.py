@@ -61,11 +61,9 @@ def read_opt(str_opt):
     return den, ntgts, dead, ix, timeout, logfile, enumtype, enumit, poolname
 
 
-def main(den, ntgts, dead, ix, timeout, logfile, enumtype, enumit):
-
-    if not (den and ntgts and dead and ix):
-        print 'Value error: not defined every options of graph'
-        return 0
+def run(den, ntgts, dead, ix,
+        timeout=False, logfile='script.log',
+        enumtype='1', enumit='10'):
 
     if logfile is None:
         logfile = 'script.log'
@@ -80,6 +78,13 @@ def main(den, ntgts, dead, ix, timeout, logfile, enumtype, enumit):
     log = logging.getLogger(__name__)
 
     graph = io.load_graph(ntgts, dead, den, ix)
+
+    ntgts = str(ntgts)
+    dead = str(dead)
+    den = str(den)
+    ix = str(ix)
+    enumtype = str(enumtype)
+    enumit = str(enumit)
 
     log.debug("START computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
@@ -115,7 +120,7 @@ def main(den, ntgts, dead, ix, timeout, logfile, enumtype, enumit):
     return 1
 
 
-if __name__ == '__main__':
+def main():
     path = os.path.dirname(os.path.realpath(__file__))
     options = read_opt(sys.argv[1:])
     enumtp = options[6]
@@ -133,7 +138,7 @@ if __name__ == '__main__':
 
     if len(sys.argv[1:]) >= 8:
         # run the algorithm passing the option from terminal
-        main(*options[:-1])
+        run(*options[:-1])
     else:
         # run the algorithm pulling the GRAPHS option and timeout option
         # from a pool file every other option is chose from terminal
@@ -154,4 +159,8 @@ if __name__ == '__main__':
                     fout.writelines(data[1:])
                 fcntl.flock(fin, fcntl.LOCK_UN)
             options = read_opt(str_options)[:-3]
-            main(*(options + (logfile, enumtp, enumit)))
+            run(*(options + (logfile, enumtp, enumit)))
+
+
+if __name__ == '__main__':
+    main()
