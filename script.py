@@ -91,12 +91,13 @@ def run(den, ntgts, dead, ix,
     log.debug("options timeout=" + str(timeout) + " enumtype=" + enumtype +
               " enumit=" + enumit)
 
-    try:
-        oldres = io.load_results(ntgts, dead, den, ix)
-        if len(oldres) > 4:
+    covset = None
+    for i in range(2):
+        oldres = io.load_results(ntgts, dead, den, ix, enumtype=(i + 1))
+        if oldres is not None:
             covset = oldres[4]
-    except IOError:
-        covset = None
+            log.debug('using covering set already computed')
+            break
 
     if timeout:
         with cr.time_limit(36000):
