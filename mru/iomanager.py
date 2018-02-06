@@ -141,5 +141,8 @@ def load_results(ntgts, dead, den, gix, enumtype="", resix=0):
     res_path = "results" + enum + "/res_graphs_" + ntgts\
                + "_ntgts/res_instance_ntgts_" + ntgts + "_den_" + den\
                + "_dead_" + dead + "_graphix_" + gix + "_ix_" + resix
-
-    return load_file(FILEDIR + res_path + ".pickle")
+    try:
+        result = load_file(FILEDIR + res_path + ".pickle")
+    except IOError:
+        result = None
+    return result
