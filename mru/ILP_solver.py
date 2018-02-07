@@ -2,13 +2,14 @@
 
 import gurobipy as gu
 import numpy as np
+import pdb
 
 
 VMAT = np.uint16
 RMAT = np.uint32
 
 
-def set_cover_solver(sets, k=None, nsol=1, place=None):
+def set_cover_solver(sets, k=None, nsol=1, place=None, sets_hist=None):
     """ solve the linear integer programming problem using gurobi solver
     Parameters
     ----------
@@ -70,6 +71,13 @@ def set_cover_solver(sets, k=None, nsol=1, place=None):
         if place is not None:
             m.addConstr(variables[place] == 1)
 
+        if sets_hist is not None:
+            # pdb.set_trace()
+            sets_hist = np.array(sets_hist)
+            lenset = sets_hist.shape[1]
+            for sh in sets_hist:
+                m.addConstr(
+                    gu.quicksum(variables[d] for d in sh) <= lenset - 1)
         m.optimize()
 
         try:
@@ -89,6 +97,8 @@ def set_cover_solver(sets, k=None, nsol=1, place=None):
                 if int(v.Xn):
                     solutions[e, i] = iset
                     i += 1
+
+        # m.write('model.lp')
 
         return solutions, True
 
