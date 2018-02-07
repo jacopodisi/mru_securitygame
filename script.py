@@ -63,7 +63,7 @@ def read_opt(str_opt):
 
 def run(den, ntgts, dead, ix,
         timeout=False, logfile='script.log',
-        enumtype='1', enumit='10'):
+        enumtype=1, enumit=10):
 
     if logfile is None:
         logfile = 'script.log'
@@ -83,13 +83,11 @@ def run(den, ntgts, dead, ix,
     dead = str(dead)
     den = str(den)
     ix = str(ix)
-    enumtype = str(enumtype)
-    enumit = str(enumit)
 
     log.debug("START computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
-    log.debug("options timeout=" + str(timeout) + " enumtype=" + enumtype +
-              " enumit=" + enumit)
+    log.debug("options timeout=" + str(timeout) + " enumtype=" +
+              str(enumtype) + " enumit=" + str(enumit))
 
     covset = None
     for i in range(2):
