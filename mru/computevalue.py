@@ -6,6 +6,7 @@ import numpy as np
 import ILP_solver as sc
 import signal_receiver as sr
 import placement_enum as pe
+import pdb
 
 from scipy import sparse
 from srg import computecovsets as cs
@@ -70,6 +71,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
                                                            setcover_min,
                                                            correlated min,
                                                            setcover_k,
+                                                           tot_time
                                                            )
     csr: covering sets of every node
     iter_sol: dictionary of type {"num_resources":
@@ -123,6 +125,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     log.debug("compute solution with minimum resources")
     st_time = time.time()
     best_enum_sol = enumfunc()
+    # pdb.set_trace()
     if best_enum_sol[0] is not None:
         corr_sol, num_iter[corr_sol[2].shape[0]] = best_enum_sol
         times_list[4] = time.time() - st_time
