@@ -74,6 +74,26 @@ class TestILPSolver1(unittest.TestCase):
         _, isok = ilp.set_cover_solver(sets, place=0, k=2)
         self.assertFalse(isok)
 
+    def test_set_cover_solver_hist_succ(self):
+        sets = np.array(self.ok_sets)
+        hist = np.array([[0, 3, 4]])
+        result, _ = ilp.set_cover_solver(sets, place=4, k=3, sets_hist=hist)
+        result = result[0]
+        set_cover_k = np.array([2, 3, 4])
+        if set_cover_k.shape == result.shape:
+            ok = (result == set_cover_k).all()
+        else:
+            ok = False
+        self.assertTrue(
+            ok,
+            msg="Error computing the set cover K:\n" + str(result))
+
+    def test_set_cover_solver_hist_fail(self):
+        sets = np.array(self.ok_sets)
+        hist = np.array([[0, 3, 4]])
+        _, isok = ilp.set_cover_solver(sets, place=0, k=3, sets_hist=hist)
+        self.assertFalse(isok)
+
     def test_maximum_resources_success(self):
         dict_sets = {
             6: sparse.csr_matrix(self.ok_sets[:3, :]),

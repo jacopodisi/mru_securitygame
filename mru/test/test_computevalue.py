@@ -596,7 +596,6 @@ class TestComputeValue5(unittest.TestCase):
         ms = str(game_val2) + '\n' + str(plac2) + '\n'\
             + str(strat2) + '\n' + str(num_iter2)
         res_game_val2 = {1: 0.5, 2: 0.75, 3: 1}
-        res_num_iter2 = {1: 2, 2: 2}
         res_plac2 = {1: [(1, 6)], 2: [(1, 1), (2, 2)],
                      3: [(1, 1), (2, 2), (3, 3)]}
         res_strat2 = {1: [([(1, 0)], 1.0)],
@@ -606,7 +605,6 @@ class TestComputeValue5(unittest.TestCase):
         self.assertEqual(plac2[1], res_plac2[1], msg=ms)
         self.assertEqual(plac[3], res_plac[3], msg=ms)
         self.assertEqual(strat2[3], res_strat2[3], msg=ms)
-        self.assertEqual(num_iter2[1], res_num_iter2[1], msg=ms)
 
 
 class TestComputeValue6(unittest.TestCase):
