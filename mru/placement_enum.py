@@ -133,6 +133,61 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
         return bestsol, num_iter
 
+    def local_search(n_res=None):
+        num_iter = 0
+        tgts = tgt_values.nonzero()[0]
+        res, _ = sc.set_cover_solver(short_set[:, tgts],
+                                     k=n_res, nsol=enum)
+
+        n_res = res.shape[1]
+
+        if maxnumres is not None and n_res == maxnumres:
+            return None, None
+
+        sets_dict = {k + 1: covset[res[0, k]]
+                     for k in range(n_res)}
+
+        res = res[0]
+        solution = cr.correlated(sets_dict, tgt_values)[0:2]
+        best_sol = (solution[0],
+                    solution[1],
+                    res)
+
+        log.debug("compute solution for different dispositions of " +
+                  str(n_res) + " resources")
+
+        ss = short_set
+        ss[:, tgts] = 1
+
+        for _ in range(enum):
+            neigh = {}
+            for r in res:
+                noncov = np.all(ss[np.delete(res, r)] == 0,
+                                axis=0)
+                neigh[r] = np.all(ss[:, noncov] == 1, axis=1)
+                neigh[r][r] = False
+                neigh[r] = list(neigh[r].nonzero()[0])
+            while True:
+                if len(neigh) == 0 or num_iter >= enum:
+                    break
+                oldix = np.random.choice(len(neigh))
+                old = neigh.keys()[oldix]
+                new = neigh[old].pop()
+                if len(neigh[old]) == 0:
+                    del neigh[old]
+                temp_res = res
+                temp_res[oldix] = new
+                solution = cr.correlated(sets_dict, tgt_values)[0:2]
+                if solution[0] > best_sol[0]:
+                    best_sol = solution
+                    best_res = temp_res
+                    new = True
+                num_iter += 1
+
+            if num_iter >= enum or not new:
+                break
+
+
     if (enumtype is None or
             covset is None or
             tgt_values is None or
