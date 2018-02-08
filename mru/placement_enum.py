@@ -103,8 +103,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             for _ in range(len(new_placements)):
                 if (sigrec.kill_now or
                         sigrec.jump or
-                        num_iter >= enum or
-                        new_placements.size == 0):
+                        num_iter >= enum):
                     break
                 # pop a random node from the attacked ones
                 r = np.random.randint(len(new_placements))
@@ -120,7 +119,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                 res_dict = {k + 1: covset[p_res[0, k]] for k in range(n_res)}
                 solution = cr.correlated(res_dict, tgt_values)
                 num_iter += 1
-                if solution[0] <= bestsol[0]:
+                if solution[0] > bestsol[0]:
                     bestsol = (solution[0:2] + (placement_hist[-1],))
                     att_strat = np.array(solution[3])
 
