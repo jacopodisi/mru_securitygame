@@ -57,15 +57,13 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             sets_dict = {k + 1: covset[res[sol, k]]
                          for k in range(n_res)}
             solution = cr.correlated(sets_dict, tgt_values)
-            if bestsol[0] < solution[0]:
+            if solution[0] > bestsol[0]:
                 bestsol = (solution[0],
                            solution[1],
                            res[sol])
-            if sigrec.kill_now:
-                return bestsol, num_iter
-            if sigrec.jump:
-                break
             num_iter += 1
+            if sigrec.kill_now or sigrec.jump:
+                break
         return bestsol, num_iter
 
     def double_oracle(n_res=None):
@@ -103,7 +101,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             for _ in range(len(new_placements)):
                 if (sigrec.kill_now or
                         sigrec.jump or
-                        num_iter >= enum):
+                        (num_iter >= enum)):
                     break
                 # pop a random node from the attacked ones
                 r = np.random.randint(len(new_placements))
@@ -129,7 +127,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
             if (sigrec.kill_now or
                     sigrec.jump or
-                    num_iter >= enum or
+                    (num_iter >= enum) or
                     new_placements.size == 0):
                 break
 
