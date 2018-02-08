@@ -125,10 +125,10 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     log.debug("compute solution with minimum resources")
     st_time = time.time()
     best_enum_sol = enumfunc()
+    times_list[4] = time.time() - st_time
     # pdb.set_trace()
     if best_enum_sol[0] is not None:
         corr_sol, num_iter[corr_sol[2].shape[0]] = best_enum_sol
-        times_list[4] = time.time() - st_time
         min_num_res = corr_sol[2].shape[0]
         solutionlist.append(corr_sol)
     else:

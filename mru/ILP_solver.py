@@ -21,7 +21,7 @@ def set_cover_solver(sets, k=None, nsol=1, place=None, sets_hist=None):
 
     Return
     ------
-    res: list of indices of sets in the set_cover optimum
+    res: numpy matrix (nsol x nres) of indices of sets in the set_cover optimum
     isok: when option 'place' is defined take value False if
           do not exist a covering solution. (avoid Error)
     """
