@@ -94,7 +94,7 @@ def load_graph(ntgts, dead, den, gix):
     return load_file(FILEDIR + graph_path + ".pickle")
 
 
-def save_results(ntgts, dead, den, gix, result):
+def save_results(ntgts, dead, den, gix, result, enumtype=""):
     """save results in file
     example -> ./file/
                   results/
@@ -112,7 +112,8 @@ def save_results(ntgts, dead, den, gix, result):
     dead = str(dead)
     den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
-    dirname = "results/res_graphs_" + str(ntgts) + "_ntgts/"
+    enum = str(enumtype)
+    dirname = "results" + enum + "/res_graphs_" + str(ntgts) + "_ntgts/"
     if not os.path.exists(FILEDIR + dirname):
         os.makedirs(FILEDIR + dirname)
     filename = "res_instance_ntgts_" + str(ntgts) + "_den_" + den + "_dead_"\
@@ -129,15 +130,19 @@ def save_results(ntgts, dead, den, gix, result):
     return fn
 
 
-def load_results(ntgts, dead, den, gix, resix=0):
+def load_results(ntgts, dead, den, gix, enumtype="", resix=0):
 
     ntgts = str(ntgts)
     dead = str(dead)
     den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
     resix = str(resix)
-    res_path = "results/res_graphs_" + ntgts + "_ntgts/res_instance_ntgts_"\
-               + ntgts + "_den_" + den + "_dead_" + dead + "_graphix_"\
-               + gix + "_ix_" + resix
-
-    return load_file(FILEDIR + res_path + ".pickle")
+    enum = str(enumtype)
+    res_path = "results" + enum + "/res_graphs_" + ntgts\
+               + "_ntgts/res_instance_ntgts_" + ntgts + "_den_" + den\
+               + "_dead_" + dead + "_graphix_" + gix + "_ix_" + resix
+    try:
+        result = load_file(FILEDIR + res_path + ".pickle")
+    except IOError:
+        result = None
+    return result

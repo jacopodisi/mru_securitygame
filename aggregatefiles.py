@@ -71,7 +71,7 @@ def it(den, tgts):
     return
 
 
-for den, tgts in nden.iteritems():
+for den, tgts in nden.items():
     it(den, tgts)
 
 timesarr = (timesarr, deadix, ntgtsix, denix)
@@ -87,7 +87,7 @@ while True:
         fntime += str(fid) + '.pickle'
         with open(fntime, mode='wb') as f:
             pickle.dump(timesarr, f, protocol=pickle.HIGHEST_PROTOCOL)
-        print 'Saved times in ' + fntime
+        print('Saved times in ' + fntime)
         break
     fid += 1
 
@@ -100,7 +100,7 @@ while True:
         fntimenoen += str(fid) + '.pickle'
         with open(fntimenoen, mode='wb') as f:
             pickle.dump(timesnoenarr, f, protocol=pickle.HIGHEST_PROTOCOL)
-        print 'Saved times in ' + fntimenoen
+        print('Saved times in ' + fntimenoen)
         break
     fid += 1
 
@@ -113,7 +113,7 @@ while True:
         fnmax += str(fid) + '.pickle'
         with open(fnmax, mode='wb') as f:
             pickle.dump(maxresarr, f, protocol=pickle.HIGHEST_PROTOCOL)
-        print 'Saved maxres in ' + fnmax
+        print('Saved maxres in ' + fnmax)
         break
     fid += 1
 
@@ -126,6 +126,6 @@ while True:
         fnval += str(fid) + '.pickle'
         with open(fnval, mode='wb') as f:
             pickle.dump(gamevalarr, f, protocol=pickle.HIGHEST_PROTOCOL)
-        print 'Saved gameval in ' + fnval
+        print('Saved gameval in ' + fnval)
         break
     fid += 1

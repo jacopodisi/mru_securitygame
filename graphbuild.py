@@ -14,7 +14,7 @@ def main():
     for d in den:
         for t in ntgts:
             for dl in dead:
-                for _ in xrange(ninsta):
+                for _ in range(ninsta):
                     try:
                         mat = gr.generateRandMatrix(t,
                                                     d,
@@ -26,9 +26,9 @@ def main():
                                                      dl,
                                                      dl)
 
-                        print io.save_graph(gra, d, dl)
+                        print(io.save_graph(gra, d, dl))
                     except ValueError:
-                        print ValueError
+                        print(ValueError)
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ class TestILPSolver1(unittest.TestCase):
 
     def test_set_cover_solver_succ(self):
         sets = self.ok_sets
-        result = ilp.set_cover_solver(sets)[0]
+        result = ilp.set_cover_solver(sets)[0][0]
         set_cover_optimum = np.array([3, 4])
         if set_cover_optimum.shape == result.shape:
             ok = (result == set_cover_optimum).all()
@@ -41,7 +41,7 @@ class TestILPSolver1(unittest.TestCase):
 
     def test_set_cover_solver_k_succ(self):
         sets = np.array(self.ok_sets)
-        result = ilp.set_cover_solver(sets, k=2)[0]
+        result = ilp.set_cover_solver(sets, k=2)[0][0]
         set_cover_k = np.array([3, 4])
         if set_cover_k.shape == result.shape:
             ok = (result == set_cover_k).all()
@@ -55,6 +55,44 @@ class TestILPSolver1(unittest.TestCase):
         sets = np.array(self.ok_sets)
         with self.assertRaises(gb.GurobiError):
             ilp.set_cover_solver(sets, k=10)
+
+    def test_set_cover_solver_place_succ(self):
+        sets = np.array(self.ok_sets)
+        result, _ = ilp.set_cover_solver(sets, place=0, k=3)
+        result = result[0]
+        set_cover_k = np.array([0, 3, 4])
+        if set_cover_k.shape == result.shape:
+            ok = (result == set_cover_k).all()
+        else:
+            ok = False
+        self.assertTrue(
+            ok,
+            msg="Error computing the set cover K:\n" + str(result))
+
+    def test_set_cover_solver_place_fail(self):
+        sets = np.array(self.ok_sets)
+        _, isok = ilp.set_cover_solver(sets, place=0, k=2)
+        self.assertFalse(isok)
+
+    def test_set_cover_solver_hist_succ(self):
+        sets = np.array(self.ok_sets)
+        hist = np.array([[0, 3, 4]])
+        result, _ = ilp.set_cover_solver(sets, place=4, k=3, sets_hist=hist)
+        result = result[0]
+        set_cover_k = np.array([2, 3, 4])
+        if set_cover_k.shape == result.shape:
+            ok = (result == set_cover_k).all()
+        else:
+            ok = False
+        self.assertTrue(
+            ok,
+            msg="Error computing the set cover K:\n" + str(result))
+
+    def test_set_cover_solver_hist_fail(self):
+        sets = np.array(self.ok_sets)
+        hist = np.array([[0, 3, 4]])
+        _, isok = ilp.set_cover_solver(sets, place=0, k=3, sets_hist=hist)
+        self.assertFalse(isok)
 
     def test_maximum_resources_success(self):
         dict_sets = {
@@ -113,7 +151,7 @@ class TestILPSolver2(unittest.TestCase):
 
     def test_set_cover_solver_succ(self):
         sets = self.ok_sets
-        result = ilp.set_cover_solver(sets)[0]
+        result = ilp.set_cover_solver(sets)[0][0]
         set_cover_optimum = np.arange(9)
         if set_cover_optimum.shape == result.shape:
             ok = (result == set_cover_optimum).all()
@@ -130,7 +168,7 @@ class TestILPSolver2(unittest.TestCase):
 
     def test_set_cover_solver_k_succ(self):
         sets = np.array(self.ok_sets)
-        result = ilp.set_cover_solver(sets, k=9)[0]
+        result = ilp.set_cover_solver(sets, k=9)[0][0]
         set_cover_k = np.arange(9)
         if set_cover_k.shape == result.shape:
             ok = (result == set_cover_k).all()

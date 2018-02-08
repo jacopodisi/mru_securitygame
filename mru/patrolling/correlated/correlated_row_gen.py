@@ -59,7 +59,9 @@ def correlated(I, target_values):
     Return
     ------
     value of the game, strategy of the team list of tuples ([(pl, route number), ...] , probability)
-        (only joint strategies played with prob>0 are listed), number of iterations
+        (only joint strategies played with prob>0 are listed), number of iterations, attacker strategy
+    NB
+    --
     """
     # coverage matrix of selected joint routes
     I_joint=lil_matrix((0,len(target_values)),dtype='int8')
@@ -114,7 +116,7 @@ def correlated(I, target_values):
         if prob > 0:
             strategy_profile.append((selected_routes[joint_route_id], prob_array[joint_route_id]))
 
-    return defender_final[0], strategy_profile, n_iter
+    return defender_final[0], strategy_profile, n_iter, attacker_tupla[1]
 
 
 def update_joint_I(I_joint, selected_routes, new_joint_routes_list, I):

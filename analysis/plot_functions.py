@@ -25,10 +25,10 @@ def plot_meantimes(dead, den, save=False):
     ax.grid(which='both')
 
     plt.xlabel('# of targets')
-    plt.ylabel('mean computation time')
+    plt.ylabel('mean time')
 
     if save:
-        plt.savefig("figures/meantimes" + str(dead) + "_" + str(den) + ".svg")
+        plt.savefig("figures/meantimes" + str(dead) + "_" + str(den) + ".pdf")
 
     plt.show()
 
@@ -49,15 +49,18 @@ def plot_meantimesnoenum(dead, den, save=False):
         if li is not None:
             ntgts.append(ntgtsix.keys()[ntgtsix.values().index(ix)])
             meantime.append(np.mean(li))
+
+    return ntgts, meantime
     plt.plot(ntgts, meantime)
     ax = plt.gca()
     ax.grid(which='both')
 
     plt.xlabel('# of targets')
-    plt.ylabel('computation time wihtout enumeration')
+    plt.ylabel('mean time')
 
     if save:
-        plt.savefig("figures/meantimesnoenum" + str(dead) + "_" + str(den) + ".svg")
+        plt.savefig("figures/meantimesnoenum" + str(dead) + "_" +
+                    str(den) + ".pdf")
 
     plt.show()
 
@@ -86,7 +89,7 @@ def plot_maxres(dead, den, save=False):
     plt.ylabel('optimal num of resources')
 
     if save:
-        plt.savefig("figures/maxres" + str(dead) + "_" + str(den) + ".svg")
+        plt.savefig("figures/maxres" + str(dead) + "_" + str(den) + ".pdf")
 
     plt.show()
 
@@ -116,7 +119,7 @@ def plot_gamevalue(dead, den, ntgts, ix, save=False):
             plt.savefig("figures/utility" + str(dead) + "_" +
                         str(den) + "_" +
                         str(ntgts) + "_" +
-                        str(ix) + ".svg")
+                        str(ix) + ".pdf")
 
         plt.show()
 
@@ -150,7 +153,7 @@ def plot_margin(dead, den, ntgts, ix, costres, save=False):
             plt.savefig("figures/margin" + str(dead) + "_" +
                         str(den) + "_" +
                         str(ntgts) + "_" +
-                        str(ix) + ".svg")
+                        str(ix) + ".pdf")
 
         plt.show()
 
