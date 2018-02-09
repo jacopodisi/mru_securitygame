@@ -107,9 +107,9 @@ def set_cover_solver(sets, k=None, nsol=1, place=None, sets_hist=None):
         if stat == 3 and place is not None:
             return solutions, False
         elif stat == 3:
-            print 'Error while computing the set cover optimization problem'
+            print('Error while computing the set cover optimization problem')
         else:
-            print 'Gurobi Status after the optimization: ', stat
+            print('Gurobi Status after the optimization: ', stat)
         raise
 
 
@@ -127,7 +127,7 @@ def maximum_resources(csr_matrices, targets):
     vertex_list: list of tuples representing the position and the route of
                  the optimal resources (ex. [(pos, route), ...])
     """
-    tot_tgts = csr_matrices[csr_matrices.keys()[0]].shape[1]
+    tot_tgts = next(iter(csr_matrices.values())).shape[1]
     if np.any(targets < 0) or np.any(targets >= tot_tgts):
         raise ValueError('Targets in input of maximum_resources function'
                          'are not tartgets of the csr_matrices')
@@ -145,7 +145,7 @@ def maximum_resources(csr_matrices, targets):
     if not isok:
         raise gu.GurobiError("GurobiError", 3)
     mat_ix = mat_ix[0]
-    return zip(vertex_list[mat_ix], covset_list[mat_ix])
+    return list(zip(vertex_list[mat_ix], covset_list[mat_ix]))
 
 
 if __name__ == '__main__':
@@ -156,5 +156,5 @@ if __name__ == '__main__':
     matri = np.array(matri)
     min0, _ = set_cover_solver(matri, k=2, nsol=1, place=1)
     # min1 = set_cover_solver(matri, k=(len(min0) + 1), nsol=6)
-    print min0
+    print(min0)
     # print min1

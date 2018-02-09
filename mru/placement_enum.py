@@ -1,8 +1,8 @@
 import logging
 import numpy as np
 
-import ILP_solver as sc
-from patrolling.correlated import correlated_row_gen as cr
+from . import ILP_solver as sc
+from .patrolling.correlated import correlated_row_gen as cr
 
 
 log = logging.getLogger(__name__)
@@ -133,64 +133,64 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
         return bestsol, num_iter
 
-    def local_search(n_res=None):
-        num_iter = 0
-        tgts = tgt_values.nonzero()[0]
-        res, _ = sc.set_cover_solver(short_set[:, tgts],
-                                     k=n_res, nsol=enum)
+    # def local_search(n_res=None):
+    #     num_iter = 0
+    #     tgts = tgt_values.nonzero()[0]
+    #     res, _ = sc.set_cover_solver(short_set[:, tgts],
+    #                                  k=n_res, nsol=enum)
 
-        n_res = res.shape[1]
+    #     n_res = res.shape[1]
 
-        if maxnumres is not None and n_res == maxnumres:
-            return None, None
+    #     if maxnumres is not None and n_res == maxnumres:
+    #         return None, None
 
-        sets_dict = {k + 1: covset[res[0, k]]
-                     for k in range(n_res)}
+    #     sets_dict = {k + 1: covset[res[0, k]]
+    #                  for k in range(n_res)}
 
-        solution = cr.correlated(sets_dict, tgt_values)[0:2]
-        best_sol = (solution[0],
-                    solution[1],
-                    res[0])
+    #     solution = cr.correlated(sets_dict, tgt_values)[0:2]
+    #     best_sol = (solution[0],
+    #                 solution[1],
+    #                 res[0])
 
-        log.debug("compute solution for different dispositions of " +
-                  str(n_res) + " resources")
+    #     log.debug("compute solution for different dispositions of " +
+    #               str(n_res) + " resources")
 
-        ss = short_set
-        ss[:, tgts] = 1
-        placement_hist = res
+    #     ss = short_set
+    #     ss[:, tgts] = 1
+    #     placement_hist = res
 
-        while num_iter <= enum:
-            new = False
-            neigh = {}
-            for r in best_sol[2]:
-                noncov = np.all(ss[np.delete(best_sol[2], r)] == 0,
-                                axis=0)
-                neigh[r] = np.all(ss[:, noncov] == 1, axis=1)
-                neigh[r][r] = False
-                neigh[r] = list(neigh[r].nonzero()[0])
-            while True:
-                if len(neigh) == 0 or num_iter >= enum:
-                    break
-                oldix = np.random.choice(len(neigh))
-                old = neigh.keys()[oldix]
-                new = neigh[old].pop()
-                if len(neigh[old]) == 0:
-                    del neigh[old]
-                temp_res = best_sol[2]
-                temp_res[oldix] = new
-                if np.any(np.all(placement_hist == temp_res, axis=1)):
-                    continue
-                placement_hist = np.vstack((placement_hist, temp_res))
-                solution = cr.correlated(sets_dict, tgt_values)[0:2]
-                if solution[0] > best_sol[0]:
-                    best_sol = (solution[0],
-                                solution[1],
-                                temp_res)
-                    new = True
-                num_iter += 1
+    #     while num_iter <= enum:
+    #         new = False
+    #         neigh = {}
+    #         for r in best_sol[2]:
+    #             noncov = np.all(ss[np.delete(best_sol[2], r)] == 0,
+    #                             axis=0)
+    #             neigh[r] = np.all(ss[:, noncov] == 1, axis=1)
+    #             neigh[r][r] = False
+    #             neigh[r] = list(neigh[r].nonzero()[0])
+    #         while True:
+    #             if len(neigh) == 0 or num_iter >= enum:
+    #                 break
+    #             oldix = np.random.choice(len(neigh))
+    #             old = list(neigh.keys())[oldix]
+    #             new = neigh[old].pop()
+    #             if len(neigh[old]) == 0:
+    #                 del neigh[old]
+    #             temp_res = best_sol[2]
+    #             temp_res[oldix] = new
+    #             if np.any(np.all(placement_hist == temp_res, axis=1)):
+    #                 continue
+    #             placement_hist = np.vstack((placement_hist, temp_res))
+    #             solution = cr.correlated(sets_dict, tgt_values)[0:2]
+    #             if solution[0] > best_sol[0]:
+    #                 best_sol = (solution[0],
+    #                             solution[1],
+    #                             temp_res)
+    #                 new = True
+    #             num_iter += 1
 
-            if not new:
-                break
+    #         if not new:
+    #             break
 
     if (enumtype is None or
             covset is None or

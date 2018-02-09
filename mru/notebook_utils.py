@@ -76,11 +76,11 @@ def print_srategy2_for_n_player(
 def print_dead_val(graph):
     tgt = graph.getTargets()
     deadlines = {t: graph.getVertex(t).deadline for t in tgt}
-    print "deadlines: " + str(deadlines)
+    print("deadlines: " + str(deadlines))
     node_values = {t: graph.getVertex(t).value for t in tgt}
-    print "values:"
-    for key, val in node_values.iteritems():
-        print str(key) + ": " + str(val)
+    print("values:")
+    for key, val in node_values.items():
+        print(str(key) + ": " + str(val))
 
 
 def compute_nx_graph(graph):
@@ -94,6 +94,6 @@ def compute_nx_graph(graph):
 
 def plot_values(result, x_label='# resources', y_label='expected utility'):
     val = sorted(result[0].items())
-    x, y = zip(*val)
+    x, y = list(zip(*val))
 
     return x, y

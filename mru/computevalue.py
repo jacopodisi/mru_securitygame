@@ -3,15 +3,15 @@
 import time
 import logging
 import numpy as np
-import ILP_solver as sc
-import signal_receiver as sr
-import placement_enum as pe
-import pdb
+from . import ILP_solver as sc
+from . import signal_receiver as sr
+from . import placement_enum as pe
 
 from scipy import sparse
-from srg import computecovsets as cs
-from srg import graph as gr
-from patrolling.correlated import correlated_row_gen as cr
+from scipy.sparse import csgraph
+from .srg import computecovsets as cs
+from .srg import graph as gr
+from .patrolling.correlated import correlated_row_gen as cr
 
 
 MTYPE = np.uint8
@@ -79,7 +79,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     """
     signal_receiver = sr.SignalReceiver(log)
     log.debug("start compute_values function")
-    start_time = time.time()
+    start_time = time.clock()
     tgts = graph.getTargets()
     tgt_values = np.array([v.value for v in graph.vertices])
 
@@ -89,14 +89,14 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     max_res_strategy = None
 
     log.debug("compute shortest sets")
-    st_time = time.time()
+    st_time = time.clock()
     shortest_matrix = compute_shortest_sets(graph, tgts)
-    times_list[0] = time.time() - st_time
+    times_list[0] = time.clock() - st_time
     if covset is None:
         log.debug("compute covering routes")
-        st_time = time.time()
+        st_time = time.clock()
         csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dom)
-        times_list[1] = time.time() - st_time
+        times_list[1] = time.clock() - st_time
     else:
         csr = covset
 
@@ -105,9 +105,9 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
         f_sol = reformat(solutionlist, max_res_strategy)
         return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
     log.debug("compute solution with maximum resources")
-    st_time = time.time()
+    st_time = time.clock()
     max_res_strategy = sc.maximum_resources(csr, tgts)
-    times_list[2] = time.time() - st_time
+    times_list[2] = time.clock() - st_time
     max_num_res = len(max_res_strategy)
 
     if signal_receiver.kill_now:
@@ -123,9 +123,9 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
 
     # minimum resource game solution
     log.debug("compute solution with minimum resources")
-    st_time = time.time()
+    st_time = time.clock()
     best_enum_sol = enumfunc()
-    times_list[4] = time.time() - st_time
+    times_list[4] = time.clock() - st_time
     # pdb.set_trace()
     if best_enum_sol[0] is not None:
         corr_sol, num_iter[corr_sol[2].shape[0]] = best_enum_sol
@@ -142,16 +142,16 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     times_list[5] = []
     for i in range(min_num_res + 1, max_num_res):
         log.debug("compute solution with " + str(i) + " resources")
-        st_time = time.time()
+        st_time = time.clock()
         corr_sol, num_iter[i] = enumfunc(n_res=i)
-        times_list[5].append(time.time() - st_time)
+        times_list[5].append(time.clock() - st_time)
         solutionlist.append(corr_sol)
 
         if signal_receiver.kill_now:
             f_sol = reformat(solutionlist, max_res_strategy)
             return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
 
-    times_list[6] = time.time() - start_time
+    times_list[6] = time.clock() - start_time
 
     # change solution format in a more readable ones
     f_sol = reformat(solutionlist, max_res_strategy)
@@ -181,10 +181,10 @@ def compute_shortest_sets(graph_game, targets):
     if gr.inf == 999:
         matrix[matrix == 999] = 0
     deadlines = {t: graph_game.getVertex(t).deadline for t in targets}
-    shortest_paths = sparse.csgraph.shortest_path(
+    shortest_paths = csgraph.shortest_path(
         matrix, directed=False, unweighted=True)
     shortest_matrix = np.zeros(shape=matrix.shape, dtype=MTYPE)
-    for tgt, dl in deadlines.iteritems():
+    for tgt, dl in deadlines.items():
         covered = shortest_paths[:, tgt] <= dl
         shortest_matrix[covered, tgt] = 1
     return shortest_matrix
@@ -252,10 +252,10 @@ if __name__ == '__main__':
     with cr.time_limit(6):
         result = compute_values(rand_graph, rm_dominated=domopt, enum=10)
 
-    print "game values: " + str(result[0])
-    print "placements: " + str(result[1])
-    print "strategies: " + str(result[2])
-    print "comptime:" + str(result[3])
+    print("game values: " + str(result[0]))
+    print("placements: " + str(result[1]))
+    print("strategies: " + str(result[2]))
+    print("comptime:" + str(result[3]))
     file_res = ''
     if domopt:
         file_res = "results_" + file_gr + "vps_dom"
