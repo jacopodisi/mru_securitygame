@@ -142,7 +142,7 @@ def main():
         # run the algorithm pulling the GRAPHS option and timeout option
         # from a pool file every other option is chose from terminal
         poolname = options[-1] if options[-1] is not None else path +\
-            '/pool2.txt'
+            '/pool.txt'
         logfile = options[5]
         if not os.path.isfile(poolname):
             m = 'File {} do not exist'.format(poolname)
