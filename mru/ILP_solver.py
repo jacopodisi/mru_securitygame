@@ -2,7 +2,6 @@
 
 import gurobipy as gu
 import numpy as np
-import pdb
 
 
 VMAT = np.uint16
