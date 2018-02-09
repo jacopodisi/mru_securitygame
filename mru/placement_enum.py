@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 def enumfunction(enumtype=None, covset=None, maxnumres=None,
                  tgt_values=None, sigrec=None,
-                 enum=1, short_set=None):
+                 enum=1, short_set=None, recursive=False):
     """ Function that given the a code (1, 2 or 3) return the corresponding
         function used to enumerate the solutions.
     Parameters
@@ -147,22 +147,23 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         sets_dict = {k + 1: covset[res[0, k]]
                      for k in range(n_res)}
 
-        res = res[0]
         solution = cr.correlated(sets_dict, tgt_values)[0:2]
         best_sol = (solution[0],
                     solution[1],
-                    res)
+                    res[0])
 
         log.debug("compute solution for different dispositions of " +
                   str(n_res) + " resources")
 
         ss = short_set
         ss[:, tgts] = 1
+        placement_hist = res
 
-        for _ in range(enum):
+        while num_iter <= enum:
+            new = False
             neigh = {}
-            for r in res:
-                noncov = np.all(ss[np.delete(res, r)] == 0,
+            for r in best_sol[2]:
+                noncov = np.all(ss[np.delete(best_sol[2], r)] == 0,
                                 axis=0)
                 neigh[r] = np.all(ss[:, noncov] == 1, axis=1)
                 neigh[r][r] = False
@@ -175,18 +176,21 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                 new = neigh[old].pop()
                 if len(neigh[old]) == 0:
                     del neigh[old]
-                temp_res = res
+                temp_res = best_sol[2]
                 temp_res[oldix] = new
+                if np.any(np.all(placement_hist == temp_res, axis=1)):
+                    continue
+                placement_hist = np.vstack((placement_hist, temp_res))
                 solution = cr.correlated(sets_dict, tgt_values)[0:2]
                 if solution[0] > best_sol[0]:
-                    best_sol = solution
-                    best_res = temp_res
+                    best_sol = (solution[0],
+                                solution[1],
+                                temp_res)
                     new = True
                 num_iter += 1
 
-            if num_iter >= enum or not new:
+            if not new:
                 break
-
 
     if (enumtype is None or
             covset is None or
@@ -200,6 +204,9 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
     if enumtype == 1:
         return gurobi_pool
     elif enumtype == 2:
+        return double_oracle
+    elif enumtype == 3:
+        recursive = True
         return double_oracle
     else:
         raise ValueError('Enumeration type ' + str(enumtype) +
