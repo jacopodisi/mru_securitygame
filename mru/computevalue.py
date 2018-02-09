@@ -19,31 +19,30 @@ MTYPE = np.uint8
 log = logging.getLogger(__name__)
 
 
-def reformat(solutionlist, max_res_strategy):
+def reformat(solutionlist, improveslist):
     """ Modify the format to respect compatibility of the solutions
     """
     game_values = {}
     strategies = {}
     placements = {}
-    max_num_res = len(max_res_strategy)
-    for sol in solutionlist:
-        nres = sol[2].shape[0]
+    impro = {}
+    for nres, sol in solutionlist.iteritems():
         if sol[0] is not None and\
            sol[1] is not None and\
            sol[2] is not None:
             game_values[nres] = sol[0]
-            strategies[nres] = sol[1]
             placements[nres] = [
                 (r + 1, p) for r, p in enumerate(sol[2])]
-    if max_res_strategy is not None:
-        placements[max_num_res] = [
-            (re + 1, x[0]) for re, x in enumerate(max_res_strategy)]
-        game_values[max_num_res] = 1
-        strategies[max_num_res] = [(
-            [(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)],
-            1.0)]
+            strategies[nres] = sol[1]
+    for nres, imp in improveslist.iteritems():
+        impro[nres] = []
+        for sol in imp:
+            temp = (sol[0],
+                    [(r + 1, p) for r, p in enumerate(sol[2])],
+                    sol[1])
+            impro[nres].append(temp)
 
-    return game_values, placements, strategies
+    return game_values, placements, strategies, impro
 
 
 def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
@@ -83,10 +82,9 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     tgts = graph.getTargets()
     tgt_values = np.array([v.value for v in graph.vertices])
 
-    solutionlist = []
+    solutionlist = {}
     times_list = {}
-    num_iter = {}
-    max_res_strategy = None
+    improves = {}
 
     log.debug("compute shortest sets")
     st_time = time.clock()
@@ -102,17 +100,21 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
 
     # optimum resource game solution
     if signal_receiver.kill_now:
-        f_sol = reformat(solutionlist, max_res_strategy)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
+        f_sol = reformat(solutionlist, improves)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
     log.debug("compute solution with maximum resources")
     st_time = time.clock()
     max_res_strategy = sc.maximum_resources(csr, tgts)
     times_list[2] = time.clock() - st_time
     max_num_res = len(max_res_strategy)
+    solutionlist[max_num_res] = (
+        1,
+        [([(ve + 1, x[1]) for ve, x in enumerate(max_res_strategy)], 1.0)],
+        [x[0] for x in max_res_strategy])
 
     if signal_receiver.kill_now:
-        f_sol = reformat(solutionlist, max_res_strategy)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
+        f_sol = reformat(solutionlist, improves)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
 
     enumfunc = pe.enumfunction(enumtype=enumtype, covset=csr,
                                tgt_values=tgt_values,
@@ -128,34 +130,34 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     times_list[4] = time.clock() - st_time
     # pdb.set_trace()
     if best_enum_sol[0] is not None:
-        corr_sol, num_iter[corr_sol[2].shape[0]] = best_enum_sol
+        corr_sol, imp = best_enum_sol
         min_num_res = corr_sol[2].shape[0]
-        solutionlist.append(corr_sol)
+        solutionlist[min_num_res] = corr_sol
+        improves[min_num_res] = imp
     else:
         min_num_res = max_num_res
 
     if signal_receiver.kill_now:
-        f_sol = reformat(solutionlist, max_res_strategy)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
+        f_sol = reformat(solutionlist, improves)
+        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
 
     # what happen between
     times_list[5] = []
     for i in range(min_num_res + 1, max_num_res):
         log.debug("compute solution with " + str(i) + " resources")
         st_time = time.clock()
-        corr_sol, num_iter[i] = enumfunc(n_res=i)
+        solutionlist[i], improves[i] = enumfunc(n_res=i)
         times_list[5].append(time.clock() - st_time)
-        solutionlist.append(corr_sol)
 
         if signal_receiver.kill_now:
-            f_sol = reformat(solutionlist, max_res_strategy)
-            return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
+            f_sol = reformat(solutionlist, improves)
+            return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
 
     times_list[6] = time.clock() - start_time
 
     # change solution format in a more readable ones
-    f_sol = reformat(solutionlist, max_res_strategy)
-    return f_sol[0], f_sol[1], f_sol[2], times_list, csr, num_iter
+    f_sol = reformat(solutionlist, improves)
+    return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
 
 
 def compute_shortest_sets(graph_game, targets):
@@ -184,7 +186,7 @@ def compute_shortest_sets(graph_game, targets):
     shortest_paths = csgraph.shortest_path(
         matrix, directed=False, unweighted=True)
     shortest_matrix = np.zeros(shape=matrix.shape, dtype=MTYPE)
-    for tgt, dl in deadlines.items():
+    for tgt, dl in deadlines.iteritems():
         covered = shortest_paths[:, tgt] <= dl
         shortest_matrix[covered, tgt] = 1
     return shortest_matrix

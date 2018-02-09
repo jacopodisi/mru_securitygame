@@ -38,7 +38,6 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         enumerating thorugh the different solution using
         poolSolution parameter of gurobi.
         """
-        num_iter = 0
         tgts = tgt_values.nonzero()[0]
         res, _ = sc.set_cover_solver(short_set[:, tgts],
                                      k=n_res, nsol=enum)
@@ -53,24 +52,26 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         log.debug("compute solution for different dispositions of " +
                   str(n_res) + " resources")
 
+        improves = []
+
         for sol in range(0, res.shape[0]):
             sets_dict = {k + 1: covset[res[sol, k]]
                          for k in range(n_res)}
             solution = cr.correlated(sets_dict, tgt_values)
+            improves.append((solution[0], solution[1], res[sol]))
             if solution[0] > bestsol[0]:
                 bestsol = (solution[0],
                            solution[1],
                            res[sol])
-            num_iter += 1
             if sigrec.kill_now or sigrec.jump:
                 break
-        return bestsol, num_iter
+        return bestsol, improves
 
     def double_oracle(n_res=None):
         """ Compute correlated solution for defender with multi resources,
         enumerating through different placements using the double oracle.
         """
-        num_iter = 0
+        improves = []
         tgts = tgt_values.nonzero()[0]
         res, _ = sc.set_cover_solver(short_set[:, tgts], k=n_res)
 
@@ -87,7 +88,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         solution = cr.correlated(sets_dict, tgt_values)
         att_strat = np.array(solution[3])
         bestsol = (solution[0:2] + (placement_hist[-1],))
-        num_iter += 1
+        improves.append(bestsol)
 
         # update placement history and list of placements to analyze
         new_placements = att_strat.nonzero()[0]
@@ -101,7 +102,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             for _ in range(len(new_placements)):
                 if (sigrec.kill_now or
                         sigrec.jump or
-                        (num_iter >= enum)):
+                        (len(improves) >= enum)):
                     break
                 # pop a random node from the attacked ones
                 r = np.random.randint(len(new_placements))
@@ -116,7 +117,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                 placement_hist = np.vstack((placement_hist, p_res))
                 res_dict = {k + 1: covset[p_res[0, k]] for k in range(n_res)}
                 solution = cr.correlated(res_dict, tgt_values)
-                num_iter += 1
+                improves.append((solution[0:2] + (placement_hist[-1],)))
                 if solution[0] > bestsol[0]:
                     bestsol = (solution[0:2] + (placement_hist[-1],))
                     att_strat = np.array(solution[3])
@@ -127,11 +128,11 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
             if (sigrec.kill_now or
                     sigrec.jump or
-                    (num_iter >= enum) or
+                    (len(improves) >= enum) or
                     new_placements.size == 0):
                 break
 
-        return bestsol, num_iter
+        return bestsol, improves
 
     # def local_search(n_res=None):
     #     num_iter = 0
