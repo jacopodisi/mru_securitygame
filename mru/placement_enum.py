@@ -58,7 +58,9 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             sets_dict = {k + 1: covset[res[sol, k]]
                          for k in range(n_res)}
             solution = cr.correlated(sets_dict, tgt_values)
-            improves.append((solution[0], solution[1], res[sol]))
+            improves.append((solution[0],
+                             solution[1],
+                             res[sol]))
             if solution[0] > bestsol[0]:
                 bestsol = (solution[0],
                            solution[1],
