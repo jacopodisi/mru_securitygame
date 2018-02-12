@@ -157,7 +157,7 @@ def main():
                 with open(poolname, "w") as fout:
                     fout.writelines(data[1:])
                 fcntl.flock(fin, fcntl.LOCK_UN)
-            options = read_opt(str_options)[:-3]
+            options = read_opt(str_options)[:-4]
             run(*(options + (logfile, enumtp, enumit)))
 
 
