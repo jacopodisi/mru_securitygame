@@ -117,21 +117,22 @@ class TestComputeValue1(unittest.TestCase):
         self.assertEqual(strat, res_strat, msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
-        compvalres2 = cv.compute_values(self.G, True, enumtype=2)
-        game_val2 = compvalres2[0]
-        plac2 = compvalres2[1]
-        strat2 = compvalres2[2]
-        num_iter2 = len(compvalres2[5])
-        ms = str(game_val2) + '\n' + str(plac2) + '\n'\
-            + str(strat2) + '\n' + str(num_iter2)
-        res_game_val2 = {1: 1}
-        res_num_iter2 = 0
-        res_plac2 = {1: [(1, 4)]}
-        res_strat2 = {1: [([(1, 0)], 1.0)]}
-        self.assertEqual(game_val2, res_game_val2, msg=ms)
-        self.assertEqual(plac2, res_plac2, msg=ms)
-        self.assertEqual(strat2, res_strat2, msg=ms)
-        self.assertEqual(num_iter2, res_num_iter2, msg=ms)
+    def test_compute_values_2(self):
+        compvalres = cv.compute_values(self.G, True, enumtype=2)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 1}
+        res_num_iter = 0
+        res_plac = {1: [(1, 4)]}
+        res_strat = {1: [([(1, 0)], 1.0)]}
+        self.assertEqual(game_val, res_game_val, msg=ms)
+        self.assertEqual(plac, res_plac, msg=ms)
+        self.assertEqual(strat, res_strat, msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
 
 
 class TestComputeValue2(unittest.TestCase):
@@ -220,21 +221,22 @@ class TestComputeValue2(unittest.TestCase):
         self.assertEqual(strat, res_strat, msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
-        compvalres2 = cv.compute_values(self.G, True, enumtype=2)
-        game_val2 = compvalres2[0]
-        plac2 = compvalres2[1]
-        strat2 = compvalres2[2]
-        num_iter2 = len(compvalres2[5])
-        ms = str(game_val2) + '\n' + str(plac2) + '\n'\
-            + str(strat2) + '\n' + str(num_iter2)
-        res_game_val2 = {4: 1}
-        res_num_iter2 = 0
-        res_plac2 = {4: [(1, 1), (2, 2), (3, 3), (4, 4)]}
-        res_strat2 = {4: [([(1, 0), (2, 0), (3, 0), (4, 0)], 1.0)]}
-        self.assertEqual(game_val2, res_game_val2, msg=ms)
-        self.assertEqual(plac2, res_plac2, msg=ms)
-        self.assertEqual(strat2, res_strat2, msg=ms)
-        self.assertEqual(num_iter2, res_num_iter2, msg=ms)
+    def test_compute_values_2(self):
+        compvalres = cv.compute_values(self.G, True, enumtype=2)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {4: 1}
+        res_num_iter = 0
+        res_plac = {4: [(1, 1), (2, 2), (3, 3), (4, 4)]}
+        res_strat = {4: [([(1, 0), (2, 0), (3, 0), (4, 0)], 1.0)]}
+        self.assertEqual(game_val, res_game_val, msg=ms)
+        self.assertEqual(plac, res_plac, msg=ms)
+        self.assertEqual(strat, res_strat, msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
 
 
 class TestComputeValue3(unittest.TestCase):
@@ -338,21 +340,22 @@ class TestComputeValue3(unittest.TestCase):
         self.assertEqual(strat, res_strat, msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
-        compvalres2 = cv.compute_values(self.G, True, enumtype=2)
-        game_val2 = compvalres2[0]
-        plac2 = compvalres2[1]
-        strat2 = compvalres2[2]
-        num_iter2 = len(compvalres2[5])
-        ms = str(game_val2) + '\n' + str(plac2) + '\n'\
-            + str(strat2) + '\n' + str(num_iter2)
-        res_game_val2 = {1: 1}
-        res_num_iter2 = 0
-        res_plac2 = {1: [(1, 2)]}
-        res_strat2 = {1: [([(1, 0)], 1.0)]}
-        self.assertEqual(game_val2, res_game_val2, msg=ms)
-        self.assertEqual(plac2, res_plac2, msg=ms)
-        self.assertEqual(strat2, res_strat2, msg=ms)
-        self.assertEqual(num_iter2, res_num_iter2, msg=ms)
+    def test_compute_values_2(self):
+        compvalres = cv.compute_values(self.G, True, enumtype=2)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 1}
+        res_num_iter = 0
+        res_plac = {1: [(1, 2)]}
+        res_strat = {1: [([(1, 0)], 1.0)]}
+        self.assertEqual(game_val, res_game_val, msg=ms)
+        self.assertEqual(plac, res_plac, msg=ms)
+        self.assertEqual(strat, res_strat, msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
 
 
 class TestComputeValue4(unittest.TestCase):
@@ -454,23 +457,62 @@ class TestComputeValue4(unittest.TestCase):
         self.assertItemsEqual(strat[2], res_strat[2], msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
-        compvalres2 = cv.compute_values(self.G, True, enum=10, enumtype=2)
-        game_val2 = compvalres2[0]
-        plac2 = compvalres2[1]
-        strat2 = compvalres2[2]
-        num_iter2 = len(compvalres2[5][1])
-        ms = str(game_val2) + '\n' + str(plac2) + '\n'\
-            + str(strat2) + '\n' + str(num_iter2)
-        res_game_val2 = {1: 0.75, 2: 1}
-        res_num_iter2 = 1
-        res_plac2 = {1: [(1, 2)], 2: [(1, 2), (2, 4)]}
-        res_strat2 = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
-                      2: [([(1, 0), (2, 0)], 1.0)]}
-        self.assertEqual(game_val2, res_game_val2, msg=ms)
-        self.assertEqual(plac2, res_plac2, msg=ms)
-        self.assertItemsEqual(strat2[1], res_strat2[1], msg=ms)
+    def test_compute_values_2(self):
+        compvalres = cv.compute_values(self.G, True, enum=10, enumtype=2)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.75, 2: 1}
+        res_num_iter = 1
+        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 4)]}
+        res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
+                     2: [([(1, 0), (2, 0)], 1.0)]}
+        self.assertEqual(game_val, res_game_val, msg=ms)
+        self.assertEqual(plac, res_plac, msg=ms)
+        self.assertItemsEqual(strat[1], res_strat[1], msg=ms)
         self.assertItemsEqual(strat[2], res_strat[2], msg=ms)
-        self.assertEqual(num_iter2, res_num_iter2, msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
+
+    def test_compute_values_3(self):
+        compvalres = cv.compute_values(self.G, True, enum=10, enumtype=3)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.75, 2: 1}
+        res_num_iter = 1
+        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 4)]}
+        res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
+                     2: [([(1, 0), (2, 0)], 1.0)]}
+        self.assertEqual(game_val, res_game_val, msg=ms)
+        self.assertEqual(plac, res_plac, msg=ms)
+        self.assertItemsEqual(strat[1], res_strat[1], msg=ms)
+        self.assertItemsEqual(strat[2], res_strat[2], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
+
+    def test_compute_values_4(self):
+        compvalres = cv.compute_values(self.G, True, enum=10, enumtype=4)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.75, 2: 1}
+        res_num_iter = 1
+        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 4)]}
+        res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
+                     2: [([(1, 0), (2, 0)], 1.0)]}
+        self.assertEqual(game_val, res_game_val, msg=ms)
+        self.assertEqual(plac, res_plac, msg=ms)
+        self.assertItemsEqual(strat[1], res_strat[1], msg=ms)
+        self.assertItemsEqual(strat[2], res_strat[2], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
 
 
 class TestComputeValue5(unittest.TestCase):
@@ -588,23 +630,68 @@ class TestComputeValue5(unittest.TestCase):
         self.assertEqual(strat[3], res_strat[3], msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
-        compvalres2 = cv.compute_values(self.G, True, enum=10, enumtype=2)
-        game_val2 = compvalres2[0]
-        plac2 = compvalres2[1]
-        strat2 = compvalres2[2]
-        num_iter2 = len(compvalres2[5])
-        ms = str(game_val2) + '\n' + str(plac2) + '\n'\
-            + str(strat2) + '\n' + str(num_iter2)
-        res_game_val2 = {1: 0.5, 2: 0.75, 3: 1}
-        res_plac2 = {1: [(1, 6)], 2: [(1, 1), (2, 2)],
-                     3: [(1, 1), (2, 2), (3, 3)]}
-        res_strat2 = {1: [([(1, 0)], 1.0)],
-                      2: [([(1, 1), (2, 2)], 1.0)],
-                      3: [([(1, 3), (2, 1), (3, 1)], 1.0)]}
-        self.assertEqual(game_val2[3], res_game_val2[3], msg=ms)
-        self.assertEqual(plac2[1], res_plac2[1], msg=ms)
+    def test_compute_values_2(self):
+        compvalres = cv.compute_values(self.G, True, enum=10, enumtype=2)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][2])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.5, 2: 0.75, 3: 1}
+        res_plac = {1: [(1, 6)], 2: [(1, 1), (2, 2)],
+                    3: [(1, 1), (2, 2), (3, 3)]}
+        res_num_iter = 2
+        res_strat = {1: [([(1, 0)], 1.0)],
+                     2: [([(1, 1), (2, 2)], 1.0)],
+                     3: [([(1, 3), (2, 1), (3, 1)], 1.0)]}
+        self.assertEqual(game_val[3], res_game_val[3], msg=ms)
+        self.assertEqual(plac[1], res_plac[1], msg=ms)
         self.assertEqual(plac[3], res_plac[3], msg=ms)
-        self.assertEqual(strat2[3], res_strat2[3], msg=ms)
+        self.assertEqual(strat[3], res_strat[3], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
+
+    def test_compute_values_3(self):
+        compvalres = cv.compute_values(self.G, True, enum=10, enumtype=3)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.5, 2: 0.75, 3: 1}
+        res_plac = {1: [(1, 6)], 2: [(1, 1), (2, 2)],
+                    3: [(1, 1), (2, 2), (3, 3)]}
+        res_num_iter = 2
+        res_strat = {1: [([(1, 0)], 1.0)],
+                     2: [([(1, 1), (2, 2)], 1.0)],
+                     3: [([(1, 3), (2, 1), (3, 1)], 1.0)]}
+        self.assertEqual(game_val[3], res_game_val[3], msg=ms)
+        self.assertEqual(plac[1], res_plac[1], msg=ms)
+        self.assertEqual(plac[3], res_plac[3], msg=ms)
+        self.assertEqual(strat[3], res_strat[3], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
+
+    def test_compute_values_4(self):
+        compvalres = cv.compute_values(self.G, True, enum=10, enumtype=4)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = (len(compvalres[5][1]), len(compvalres[5][2]))
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.5, 2: 0.75, 3: 1}
+        res_plac = {1: [(1, 6)], 2: [(1, 1), (2, 2)],
+                    3: [(1, 1), (2, 2), (3, 3)]}
+        res_num_iter = (7, 10)
+        res_strat = {1: [([(1, 0)], 1.0)],
+                     2: [([(1, 1), (2, 2)], 1.0)],
+                     3: [([(1, 3), (2, 1), (3, 1)], 1.0)]}
+        self.assertEqual(game_val[3], res_game_val[3], msg=ms)
+        self.assertEqual(plac[1], res_plac[1], msg=ms)
+        self.assertEqual(plac[3], res_plac[3], msg=ms)
+        self.assertEqual(strat[3], res_strat[3], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
 
 
 class TestComputeValue6(unittest.TestCase):
@@ -678,46 +765,23 @@ class TestComputeValue6(unittest.TestCase):
         self.assertRaises(ValueError, f, self.G, too_long)
 
     def test_compute_values(self):
-        compvalres = cv.compute_values(self.G)
+        compvalres = cv.compute_values(self.G, enum=10)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
         num_iter = len(compvalres[5][1])
         ms = str(game_val) + '\n' + str(plac) + '\n'\
             + str(strat) + '\n' + str(num_iter)
-
         res_game_val = {1: 0.75, 2: 1}
-        res_num_iter = 1
-        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
+        res_num_iter = 3
         res_strat = {1: [([(1, 2)], 0.5), ([(1, 1)], 0.5)],
                      2: [([(1, 1), (2, 2)], 1.0)]}
-
         self.assertEqual(game_val[2], res_game_val[2], msg=ms)
-        self.assertEqual(plac, res_plac, msg=ms)
         self.assertEqual(strat[2], res_strat[2], msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
-        compvalres2 = cv.compute_values(self.G, enumtype=2)
-        game_val2 = compvalres2[0]
-        plac2 = compvalres2[1]
-        strat2 = compvalres2[2]
-        num_iter2 = len(compvalres2[5][1])
-        ms = str(game_val2) + '\n' + str(plac2) + '\n'\
-            + str(strat2) + '\n' + str(num_iter2)
-
-        res_game_val2 = {1: 0.75, 2: 1}
-        res_num_iter2 = 1
-        res_plac2 = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
-        res_strat2 = {1: [([(1, 2)], 0.5), ([(1, 1)], 0.5)],
-                      2: [([(1, 1), (2, 2)], 1.0)]}
-
-        self.assertEqual(game_val2[2], res_game_val2[2], msg=ms)
-        self.assertEqual(plac2, res_plac2, msg=ms)
-        self.assertEqual(strat2[2], res_strat2[2], msg=ms)
-        self.assertEqual(num_iter2, res_num_iter2, msg=ms)
-
-    def test_compute_values_dom(self):
-        compvalres = cv.compute_values(self.G, True)
+    def test_compute_values_2(self):
+        compvalres = cv.compute_values(self.G, enumtype=2, enum=10)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -725,7 +789,53 @@ class TestComputeValue6(unittest.TestCase):
         ms = str(game_val) + '\n' + str(plac) + '\n'\
             + str(strat) + '\n' + str(num_iter)
         res_game_val = {1: 0.75, 2: 1}
-        res_num_iter = 1
+        res_num_iter = 3
+        res_strat = {1: [([(1, 2)], 0.5), ([(1, 1)], 0.5)],
+                     2: [([(1, 1), (2, 2)], 1.0)]}
+        self.assertEqual(game_val[2], res_game_val[2], msg=ms)
+        self.assertEqual(strat[2], res_strat[2], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
+
+    def test_compute_values_3(self):
+        compvalres = cv.compute_values(self.G, enumtype=3, enum=10)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.75, 2: 1}
+        res_strat = {1: [([(1, 2)], 0.5), ([(1, 1)], 0.5)],
+                     2: [([(1, 1), (2, 2)], 1.0)]}
+        self.assertEqual(game_val[2], res_game_val[2], msg=ms)
+        self.assertEqual(strat[2], res_strat[2], msg=ms)
+
+    def test_compute_values_4(self):
+        compvalres = cv.compute_values(self.G, enumtype=4, enum=10)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.75, 2: 1}
+        res_num_iter = 3
+        res_strat = {1: [([(1, 2)], 0.5), ([(1, 1)], 0.5)],
+                     2: [([(1, 1), (2, 2)], 1.0)]}
+        self.assertEqual(game_val[2], res_game_val[2], msg=ms)
+        self.assertEqual(strat[2], res_strat[2], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
+
+    def test_compute_values_dom(self):
+        compvalres = cv.compute_values(self.G, True, enum=10)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.75, 2: 1}
+        res_num_iter = 3
         res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
         res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
                      2: [([(1, 0), (2, 1)], 1.0)]}
@@ -734,19 +844,56 @@ class TestComputeValue6(unittest.TestCase):
         self.assertEqual(strat[2], res_strat[2], msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
-        compvalres2 = cv.compute_values(self.G, True)
-        game_val2 = compvalres2[0]
-        plac2 = compvalres2[1]
-        strat2 = compvalres2[2]
-        num_iter2 = len(compvalres2[5][1])
-        ms = str(game_val2) + '\n' + str(plac2) + '\n'\
-            + str(strat2) + '\n' + str(num_iter2)
-        res_game_val2 = {1: 0.75, 2: 1}
-        res_num_iter2 = 1
-        res_plac2 = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
-        res_strat2 = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
-                      2: [([(1, 0), (2, 1)], 1.0)]}
-        self.assertEqual(game_val2[2], res_game_val2[2], msg=ms)
-        self.assertEqual(plac2[2], res_plac2[2], msg=ms)
-        self.assertEqual(strat2[2], res_strat2[2], msg=ms)
-        self.assertEqual(num_iter2, res_num_iter2, msg=ms)
+    def test_compute_values_dom_2(self):
+        compvalres = cv.compute_values(self.G, True, enumtype=2, enum=10)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.75, 2: 1}
+        res_num_iter = 3
+        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
+        res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
+                     2: [([(1, 0), (2, 1)], 1.0)]}
+        self.assertEqual(game_val[2], res_game_val[2], msg=ms)
+        self.assertEqual(plac[2], res_plac[2], msg=ms)
+        self.assertEqual(strat[2], res_strat[2], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
+
+    def test_compute_values_dom_3(self):
+        compvalres = cv.compute_values(self.G, True, enumtype=3, enum=10)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.75, 2: 1}
+        res_num_iter = 3
+        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
+        res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
+                     2: [([(1, 0), (2, 1)], 1.0)]}
+        self.assertEqual(game_val[2], res_game_val[2], msg=ms)
+        self.assertEqual(plac[2], res_plac[2], msg=ms)
+        self.assertEqual(strat[2], res_strat[2], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
+
+    def test_compute_values_dom_4(self):
+        compvalres = cv.compute_values(self.G, True, enumtype=4, enum=10)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = len(compvalres[5][1])
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.75, 2: 1}
+        res_num_iter = 3
+        res_plac = {1: [(1, 2)], 2: [(1, 2), (2, 2)]}
+        res_strat = {1: [([(1, 1)], 0.5), ([(1, 0)], 0.5)],
+                     2: [([(1, 0), (2, 1)], 1.0)]}
+        self.assertEqual(game_val[2], res_game_val[2], msg=ms)
+        self.assertEqual(plac[2], res_plac[2], msg=ms)
+        self.assertEqual(strat[2], res_strat[2], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
