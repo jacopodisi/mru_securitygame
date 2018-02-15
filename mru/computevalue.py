@@ -76,6 +76,8 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     iter_sol: dictionary of type {"num_resources":
                                   num_solution_iterated, ...}
     """
+    enum = int(enum)
+    enumtype = int(enumtype)
     signal_receiver = sr.SignalReceiver(log)
     log.debug("start compute_values function")
     start_time = time.clock()

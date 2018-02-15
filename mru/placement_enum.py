@@ -167,7 +167,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
         placement_hist = np.array(res)
 
-        while len(improves) < enum:
+        while (len(improves) < enum):
             new = False
 
             # build neighborhood
@@ -223,6 +223,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         raise ValueError('Some parameters are not defined')
 
     enumtype = int(enumtype)
+    enum = int(enum)
 
     if enumtype == 1:
         return gurobi_pool
