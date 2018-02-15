@@ -182,7 +182,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                 tocov[notgts] = False
 
                 temp_neigh = np.all(short_set[:, tocov] >= 1, axis=1)
-                temp_neigh[r] = False
+                temp_neigh[bestsol[2]] = False
                 nonz = temp_neigh.nonzero()[0]
                 if len(nonz) > 0:
                     neigh[r] = collections.deque(nonz)
