@@ -1,5 +1,6 @@
 import logging
 import pdb
+import random
 import collections
 import numpy as np
 
@@ -176,9 +177,10 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                 if len(others) > 0:
                     tocov = np.all(short_set[others] == 0,
                                    axis=0)
-                    tocov[notgts] = False
                 else:
-                    tocov = (tgt_values > 0)
+                    tocov = np.full(tgt_values.shape[0], True)
+                tocov[notgts] = False
+
                 temp_neigh = np.all(short_set[:, tocov] >= 1, axis=1)
                 temp_neigh[r] = False
                 nonz = temp_neigh.nonzero()[0]
@@ -190,8 +192,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             while len(neigh) > 0:
                 if len(improves) >= enum:
                     break
-                oldix = np.random.choice(len(neigh))
-                oldpl = list(neigh.keys())[oldix]
+                oldpl = random.choice(list(neigh.keys()))
                 newpl = neigh[oldpl].pop()
                 if len(neigh[oldpl]) == 0:
                     del neigh[oldpl]
@@ -201,6 +202,8 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                 if np.any(np.all(placement_hist == temp_res, axis=1)):
                     continue
                 placement_hist = np.vstack((placement_hist, temp_res))
+                sets_dict = {k + 1: covset[temp_res[k]]
+                             for k in range(n_res)}
                 solution = cr.correlated(sets_dict, tgt_values)[0:2]
                 improves.append(solution + (temp_res,))
                 if solution[0] > bestsol[0]:

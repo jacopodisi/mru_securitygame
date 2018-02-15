@@ -92,8 +92,8 @@ def compute_nx_graph(graph):
     return gr, pos
 
 
-def plot_values(result, x_label='# resources', y_label='expected utility'):
-    val = sorted(result[0].items())
+def sortdict(res, x_label='# resources', y_label='expected utility'):
+    val = sorted(res.items())
     x, y = list(zip(*val))
 
     return x, y

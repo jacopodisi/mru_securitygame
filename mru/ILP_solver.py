@@ -131,15 +131,19 @@ def maximum_resources(csr_matrices, targets):
         raise ValueError('Targets in input of maximum_resources function'
                          'are not tartgets of the csr_matrices')
     mat = np.array([], dtype=np.uint8).reshape((0, tot_tgts))
-    vertex_list = np.array([], dtype=VMAT)
-    covset_list = np.array([], dtype=RMAT)
+    tot_len = 0
+    for v in csr_matrices:
+        tot_len += csr_matrices[v].shape[0]
+    vertex_list = np.empty(tot_len, dtype=VMAT)
+    covset_list = np.empty(tot_len, dtype=RMAT)
+    start = 0
     for v in csr_matrices:
         arr = csr_matrices[v].toarray()
         mat = np.vstack((mat, arr))
-        t_veli = np.full(shape=(arr.shape[0]), fill_value=v, dtype=VMAT)
-        vertex_list = np.append(vertex_list, t_veli)
-        t_covli = np.arange(arr.shape[0], dtype=RMAT)
-        covset_list = np.append(covset_list, t_covli)
+        end = start + arr.shape[0]
+        vertex_list[start:end] = v
+        covset_list[start:end] = np.arange(arr.shape[0], dtype=RMAT)
+        start = end
     mat_ix, isok = set_cover_solver(mat[:, targets])
     if not isok:
         raise gu.GurobiError("GurobiError", 3)
