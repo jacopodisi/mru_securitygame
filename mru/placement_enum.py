@@ -143,6 +143,98 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
         return bestsol, improves
 
+    def double_oracle_v2(n_res=None):
+        """ Compute correlated solution for defender with multi resources,
+        enumerating through different placements using the double oracle.
+        """
+
+        improves = []
+        placements = collections.deque([None])
+        placement_hist = None
+        bestsol = (0,)
+        tgts = tgt_values.nonzero()[0]
+        notgts = (tgt_values <= 0).nonzero()[0]
+
+        if n_res is None:
+            n_res_str = 'minimum'
+        else:
+            n_res_str = str(n_res)
+        log.debug("compute solution for different dispositions of " +
+                  n_res_str + " resources")
+
+        res, isok = sc.set_cover_solver(short_set[:, tgts],
+                                        k=n_res)
+        n_res = res.shape[1]
+        if maxnumres is not None and n_res >= maxnumres:
+            return None, None
+
+        placement_hist = np.array(res)
+        res_dict = {k + 1: covset[res[0, k]] for k in range(n_res)}
+        solution = cr.correlated(res_dict, tgt_values)
+        improves.append((solution[0:2] + (placement_hist[-1],)))
+        bestsol = deepcopy((solution[0:2] + (placement_hist[-1],)))
+
+        att_strat = np.array(solution[3])
+        count_nz = np.count_nonzero(att_strat)
+        new_placements = list(np.argsort(-att_strat)[:count_nz])
+        placements = collections.deque(new_placements[::-1])
+        better = True
+
+        while len(improves) < enum:
+
+            if (sigrec.kill_now or
+                    sigrec.jump or
+                    (len(placements) == 0)):
+                break
+
+            p = placements.pop()
+            # build neighborhood
+            if better:
+                neigh = {}
+                for i, r in enumerate(bestsol[2]):
+                    others = np.delete(bestsol[2], i)
+                    if len(others) > 0:
+                        tocov = np.all(short_set[others] == 0,
+                                       axis=0)
+                    else:
+                        tocov = np.full(tgt_values.shape[0], True)
+                    tocov[notgts] = False
+                    temp_neigh = np.all(short_set[:, tocov] >= 1, axis=1)
+                    temp_neigh[bestsol[2]] = False
+                    if np.any(temp_neigh):
+                        neigh[r] = temp_neigh
+            better = False
+            old = -1
+            for o, ne in neigh.iteritems():
+                if ne[p]:
+                    old = o
+                    break
+
+            if old < 0:
+                continue
+
+            p_res = deepcopy(bestsol[2])
+            p_res[p_res == old] = p
+
+            ifvisited = np.all(placement_hist == p_res, axis=1)
+            if (not isok or np.any(ifvisited)):
+                continue
+            placement_hist = np.vstack((placement_hist, p_res))
+
+            res_dict = {k + 1: covset[p_res[k]] for k in range(n_res)}
+            solution = cr.correlated(res_dict, tgt_values)
+            improves.append((solution[0:2] + (placement_hist[-1],)))
+
+            if solution[0] > bestsol[0]:
+                bestsol = deepcopy((solution[0:2] + (placement_hist[-1],)))
+                att_strat = np.array(solution[3])
+                count_nz = np.count_nonzero(att_strat)
+                new_placements = list(np.argsort(-att_strat)[:count_nz])
+                placements = collections.deque(new_placements[::-1])
+                better = True
+
+        return bestsol, improves
+
     def local_search(n_res=None):
 
         tgts = tgt_values.nonzero()[0]
@@ -234,6 +326,8 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         return double_oracle
     elif enumtype == 4:
         return local_search
+    elif enumtype == 5:
+        return double_oracle_v2
     else:
         raise ValueError('Enumeration type ' + str(enumtype) +
                          ', wrongly defined')
