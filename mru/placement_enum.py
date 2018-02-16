@@ -301,6 +301,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                 if solution[0] > bestsol[0]:
                     bestsol = deepcopy((solution[0], solution[1], temp_res))
                     new = True
+                    break
 
             if not new:
                 break
