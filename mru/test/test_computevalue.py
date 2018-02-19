@@ -28,7 +28,7 @@ class TestComputeValue1(unittest.TestCase):
 
     def test_compute_shortest_sets(self):
         f = cv.compute_shortest_sets
-        result = f(self.G, self.G.getTargets())
+        result, _ = f(self.G, self.G.getTargets())
 
         shortest_sets = np.array(
             [[0, 1, 1, 1, 1],
@@ -158,7 +158,7 @@ class TestComputeValue2(unittest.TestCase):
 
     def test_compute_shortest_sets(self):
         f = cv.compute_shortest_sets
-        result = f(self.G, self.G.getTargets())
+        result, _ = f(self.G, self.G.getTargets())
 
         shortest_sets = np.array(
             [[0, 0, 0, 0, 0],
@@ -262,7 +262,7 @@ class TestComputeValue3(unittest.TestCase):
 
     def test_compute_shortest_sets(self):
         f = cv.compute_shortest_sets
-        result = f(self.G, self.G.getTargets())
+        result, _ = f(self.G, self.G.getTargets())
 
         shortest_sets = np.array(
             [[1, 1, 0, 1, 1],
@@ -381,7 +381,7 @@ class TestComputeValue4(unittest.TestCase):
 
     def test_compute_shortest_sets(self):
         f = cv.compute_shortest_sets
-        result = f(self.G, self.G.getTargets())
+        result, _ = f(self.G, self.G.getTargets())
 
         shortest_sets = np.array(
             [[1, 1, 0, 1, 1],
@@ -529,7 +529,7 @@ class TestComputeValue5(unittest.TestCase):
         cls.v3 = gr.Vertex(1, 0.5, 2)
         cls.v4 = gr.Vertex(1, 0.5, 2)
         cls.v5 = gr.Vertex(1, 0.5, 2)
-        cls.v6 = gr.Vertex(1, 0.000001, 2)
+        cls.v6 = gr.Vertex(1, 0.5, 2)
 
         cls.G = gr.Graph(np.array(
             [cls.v0, cls.v1, cls.v2, cls.v3, cls.v4, cls.v5, cls.v6]))
@@ -543,7 +543,7 @@ class TestComputeValue5(unittest.TestCase):
 
     def test_compute_shortest_sets(self):
         f = cv.compute_shortest_sets
-        result = f(self.G, self.G.getTargets())
+        result, _= f(self.G, self.G.getTargets())
 
         shortest_sets = np.array(
             [[0, 1, 1, 1, 1, 1, 1],
@@ -713,7 +713,7 @@ class TestComputeValue6(unittest.TestCase):
 
     def test_compute_shortest_sets(self):
         f = cv.compute_shortest_sets
-        result = f(self.G, self.G.getTargets())
+        result, _ = f(self.G, self.G.getTargets())
 
         shortest_sets = np.array(
             [[1, 1, 1],
