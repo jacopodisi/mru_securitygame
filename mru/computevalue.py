@@ -3,6 +3,7 @@
 import time
 import logging
 import numpy as np
+import pdb
 from . import ILP_solver as sc
 from . import signal_receiver as sr
 from . import placement_enum as pe
@@ -90,7 +91,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
 
     log.debug("compute shortest sets")
     st_time = time.clock()
-    shortest_matrix = compute_shortest_sets(graph, tgts)
+    shortest_matrix, shortest_paths = compute_shortest_sets(graph, tgts)
     times_list[0] = time.clock() - st_time
     if covset is None:
         log.debug("compute covering routes")
@@ -123,6 +124,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
                                sigrec=signal_receiver,
                                enum=enum,
                                short_set=shortest_matrix,
+                               short_path=shortest_paths,
                                maxnumres=max_num_res)
 
     # minimum resource game solution
@@ -185,13 +187,17 @@ def compute_shortest_sets(graph_game, targets):
     if gr.inf == 999:
         matrix[matrix == 999] = 0
     deadlines = {t: graph_game.getVertex(t).deadline for t in targets}
-    shortest_paths = csgraph.shortest_path(
-        matrix, directed=False, unweighted=True)
+    shortest_paths, pred = csgraph.shortest_path(
+        matrix, directed=False, unweighted=True, return_predecessors=True)
     shortest_matrix = np.zeros(shape=matrix.shape, dtype=MTYPE)
+    maxdl = -1
     for tgt, dl in deadlines.iteritems():
         covered = shortest_paths[:, tgt] <= dl
         shortest_matrix[covered, tgt] = 1
-    return shortest_matrix
+        if dl > maxdl:
+            maxdl = dl
+    shortest_paths[shortest_matrix == 0] = 0
+    return shortest_matrix, shortest_paths
 
 
 def compute_covering_routes(graph_game, targets, rm_dominated=False):
@@ -221,7 +227,6 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False):
     for ver in range(n_vertices):
         covset = cs.computeCovSet(graph_game, ver, targets)
         covset_matrix = np.zeros((len(covset), n_vertices), dtype=MTYPE)
-
         l_covset = len(covset)
         if rm_dominated:
             for route in range(l_covset):
