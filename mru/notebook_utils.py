@@ -83,17 +83,48 @@ def print_dead_val(graph):
         print(str(key) + ": " + str(val))
 
 
-def compute_nx_graph(graph):
+def compute_nx_graph(graph, plot=False):
     adj = graph.getAdjacencyMatrix()
     adj[adj > 1] = 0
     gr = nx.from_numpy_matrix(adj)
     pos = nx.spring_layout(gr)
-    nx.draw_networkx(gr, node_color='y', pos=pos)
+    if plot:
+        nx.draw_networkx(gr, node_color='y', pos=pos)
     return gr, pos
 
 
 def sortdict(res, x_label='# resources', y_label='expected utility'):
     val = sorted(res.items())
     x, y = list(zip(*val))
-
     return x, y
+
+
+def plotplaceimprove(result, nres, node_val, graph, pos_nodes=None):
+    gamevals, plac, _ = zip(*result[5][nres])
+    sortimpro = np.argsort(gamevals)
+    old = []
+    for imp in sortimpro:
+        if imp > 0 and gamevals[imp] <= gamevals[imp - 1]:
+            continue
+        col = ['y'] * len(node_val)
+        for tp in plac[imp]:
+            col[tp[1]] = 'g'
+        if pos_nodes is None:
+            pos_nodes = nx.spring_layout(graph)
+        plt.figure(imp)
+        plt.title("game values = " + str(gamevals[imp]))
+        nx.draw_networkx(graph,
+                         node_color=col,
+                         # node_size=1000,
+                         # font_size=20,
+                         pos=pos_nodes,
+                         with_labels=True)
+        node_vals_dict = {i: "{:.2f}".format(v) for i, v in enumerate(node_val)}
+        pos_attrs = {}
+        for node, coords in pos_nodes.items():
+            pos_attrs[node] = (coords[0], coords[1] + 0.04)
+        nx.draw_networkx_labels(graph,
+                                pos_attrs,
+                                # font_size=20,
+                                labels=node_vals_dict)
+        plt.show()

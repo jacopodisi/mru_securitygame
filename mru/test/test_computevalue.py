@@ -693,6 +693,27 @@ class TestComputeValue5(unittest.TestCase):
         self.assertEqual(strat[3], res_strat[3], msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
+    def test_compute_values_6(self):
+        compvalres = cv.compute_values(self.G, True, enum=10, enumtype=6)
+        game_val = compvalres[0]
+        plac = compvalres[1]
+        strat = compvalres[2]
+        num_iter = (len(compvalres[5][1]), len(compvalres[5][2]))
+        ms = str(game_val) + '\n' + str(plac) + '\n'\
+            + str(strat) + '\n' + str(num_iter)
+        res_game_val = {1: 0.5, 2: 0.75, 3: 1}
+        res_plac = {1: [(1, 6)], 2: [(1, 1), (2, 2)],
+                    3: [(1, 1), (2, 2), (3, 3)]}
+        res_num_iter = (7, 10)
+        res_strat = {1: [([(1, 0)], 1.0)],
+                     2: [([(1, 1), (2, 2)], 1.0)],
+                     3: [([(1, 3), (2, 1), (3, 1)], 1.0)]}
+        self.assertEqual(game_val[3], res_game_val[3], msg=ms)
+        self.assertEqual(plac[1], res_plac[1], msg=ms)
+        self.assertEqual(plac[3], res_plac[3], msg=ms)
+        self.assertEqual(strat[3], res_strat[3], msg=ms)
+        self.assertEqual(num_iter, res_num_iter, msg=ms)
+
 
 class TestComputeValue6(unittest.TestCase):
     """
