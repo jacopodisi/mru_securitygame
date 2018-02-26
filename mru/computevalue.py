@@ -196,7 +196,7 @@ def compute_shortest_sets(graph_game, targets):
         shortest_matrix[covered, tgt] = 1
         if dl > maxdl:
             maxdl = dl
-    shortest_paths[shortest_matrix == 0] = 0
+    shortest_paths[shortest_matrix == 0] = -1
     return shortest_matrix, shortest_paths
 
 
