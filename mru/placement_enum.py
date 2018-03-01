@@ -1,6 +1,4 @@
 import logging
-import pdb
-import random
 import collections
 import numpy as np
 
@@ -13,15 +11,15 @@ log = logging.getLogger(__name__)
 
 
 def enumfunction(enumtype=None, covset=None, maxnumres=None,
-                 tgt_values=None, sigrec=None, short_path=None,
-                 enum=1, short_set=None, depthfirst=False,):
+                 node_values=None, sigrec=None, short_path=None,
+                 enum=1, short_set=None):
     """ Function that given the a code (1, 2 or 3) return the corresponding
         function used to enumerate the solutions.
     Parameters
     ----------
     enumtype: type of algorithm used to iterate through different solutions
     covset: covering set of every node of the graph
-    tgt_values: value of each target
+    node_values: value of each node (included non targets)
     sigrec: instance of signal receiver
     short_set: shortest set of every node
     maxnumres: maximum number of resources (optional)
@@ -37,26 +35,42 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
     short_set must be the shortest set from each node to every node,
     not just the targets
     """
+
+    def build_neigh(loc_res, nontgts, loc_node_sort=None):
+        neigh = {}
+        for i, r in enumerate(loc_res):
+            # compute target to be covered
+            others = np.delete(loc_res, i)
+            if len(others) > 0:
+                tocov = np.all(short_set[others] == 0, axis=0)
+            else:
+                tocov = np.full(short_set.shape[0], True)
+            tocov[nontgts] = False
+
+            # compute neighbors
+            temp_neigh = np.all(short_set[:, tocov] >= 1, axis=1)
+            temp_neigh[loc_res] = False
+            temp_neigh = temp_neigh.nonzero()[0]
+
+            # order neighbors based on loc_node_sort
+            if len(temp_neigh) > 0:
+                if loc_node_sort is not None:
+                    sortneigh = np.in1d(loc_node_sort, temp_neigh,
+                                        assume_unique=True)
+                    temp_neigh = loc_node_sort[sortneigh.nonzero()[0]]
+                neigh[r] = collections.deque(temp_neigh)
+        return neigh
+
     def gurobi_pool(n_res=None):
         """ Compute correlated solution for defender with multi resources
         enumerating thorugh the different solution using
         poolSolution parameter of gurobi.
         """
-        tgts = tgt_values.nonzero()[0]
+        tgts = node_values.nonzero()[0]
         res, _ = sc.set_cover_solver(short_set[:, tgts],
                                      k=n_res, nsol=enum)
 
         n_res = res.shape[1]
-        if n_res == 4:
-            res = [[1, 3, 7, 21],
-                   [1, 3, 20, 21],
-                   [1, 3, 5, 21],
-                   [1, 3, 2, 21],
-                   [1, 3, 23, 21],
-                   [1, 3, 1, 21],
-                   [1, 3, 3, 21],
-                   [1, 3, 21, 21]]
-            res = np.array(res)
 
         if maxnumres is not None and n_res == maxnumres:
             return None, None
@@ -71,7 +85,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         for sol in range(0, res.shape[0]):
             sets_dict = {k + 1: covset[res[sol, k]]
                          for k in range(n_res)}
-            solution = cr.correlated(sets_dict, tgt_values)
+            solution = cr.correlated(sets_dict, node_values)
             improves.append((solution[0],
                              solution[1],
                              res[sol]))
@@ -93,7 +107,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         placement_hist = None
         att_hist = None
         bestsol = (0,)
-        tgts = tgt_values.nonzero()[0]
+        tgts = node_values.nonzero()[0]
 
         if n_res is None:
             n_res_str = 'minimum'
@@ -101,19 +115,14 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             n_res_str = str(n_res)
         log.debug("compute solution for different dispositions of " +
                   n_res_str + " resources")
-        better = False
 
         while len(improves) < enum:
 
-            if (sigrec.kill_now or
-                    sigrec.jump or
+            if (sigrec.kill_now or sigrec.jump or
                     (len(placements) == 0)):
                 break
 
-            if depthfirst:
-                p = placements.pop()
-            else:
-                p = placements.popleft()
+            p = placements.pop()
 
             p_res, isok = sc.set_cover_solver(short_set[:, tgts],
                                               k=n_res, place=p)
@@ -130,26 +139,17 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                 placement_hist = np.vstack((placement_hist, p_res))
 
             res_dict = {k + 1: covset[p_res[0, k]] for k in range(n_res)}
-            solution = cr.correlated(res_dict, tgt_values)
+            solution = cr.correlated(res_dict, node_values)
             improves.append((solution[0:2] + (placement_hist[-1],)))
 
             if solution[0] > bestsol[0]:
                 bestsol = deepcopy((solution[0:2] + (placement_hist[-1],)))
                 att_strat = np.array(solution[3])
-                better = True
-
-            if ((not depthfirst and len(placements) == 0) or
-                    (depthfirst and better)):
                 att_strat[att_hist == 1] = 0
                 count_nz = np.count_nonzero(att_strat)
-                new_placements = list(np.argsort(-att_strat)[:count_nz])
+                new_placements = np.argsort(-att_strat)[:count_nz]
                 att_hist[new_placements] = 1
-                if depthfirst:
-                    placements.extend(new_placements[::-1])
-                else:
-                    placements.extend(new_placements)
-
-            better = False
+                placements.extend(new_placements[::-1])
 
         return bestsol, improves
 
@@ -162,8 +162,8 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         placements = collections.deque([None])
         placement_hist = None
         bestsol = (0,)
-        tgts = tgt_values.nonzero()[0]
-        notgts = (tgt_values <= 0).nonzero()[0]
+        tgts = node_values.nonzero()[0]
+        notgts = (node_values <= 0).nonzero()[0]
 
         if n_res is None:
             n_res_str = 'minimum'
@@ -180,20 +180,19 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
         placement_hist = np.array(res)
         res_dict = {k + 1: covset[res[0, k]] for k in range(n_res)}
-        solution = cr.correlated(res_dict, tgt_values)
+        solution = cr.correlated(res_dict, node_values)
         improves.append((solution[0:2] + (placement_hist[-1],)))
         bestsol = deepcopy((solution[0:2] + (placement_hist[-1],)))
 
         att_strat = np.array(solution[3])
         count_nz = np.count_nonzero(att_strat)
-        new_placements = list(np.argsort(-att_strat)[:count_nz])
+        new_placements = np.argsort(-att_strat)[:count_nz]
         placements = collections.deque(new_placements[::-1])
         better = True
 
         while len(improves) < enum:
 
-            if (sigrec.kill_now or
-                    sigrec.jump or
+            if (sigrec.kill_now or sigrec.jump or
                     (len(placements) == 0)):
                 break
 
@@ -207,7 +206,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                         tocov = np.all(short_set[others] == 0,
                                        axis=0)
                     else:
-                        tocov = np.full(tgt_values.shape[0], True)
+                        tocov = np.full(node_values.shape[0], True)
                     tocov[notgts] = False
                     temp_neigh = np.all(short_set[:, tocov] >= 1, axis=1)
                     temp_neigh[bestsol[2]] = False
@@ -232,7 +231,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             placement_hist = np.vstack((placement_hist, p_res))
 
             res_dict = {k + 1: covset[p_res[k]] for k in range(n_res)}
-            solution = cr.correlated(res_dict, tgt_values)
+            solution = cr.correlated(res_dict, node_values)
             improves.append((solution[0:2] + (placement_hist[-1],)))
 
             if solution[0] > bestsol[0]:
@@ -247,117 +246,30 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
     def local_search(n_res=None):
 
-        tgts = tgt_values.nonzero()[0]
-        notgts = (tgt_values <= 0).nonzero()[0]
-        if n_res is None:
-            n_res_str = 'minimum'
-        else:
-            n_res_str = str(n_res)
-        log.debug("compute solution for different dispositions of " +
-                  n_res_str + " resources")
-
-        res, _ = sc.set_cover_solver(short_set[:, tgts],
-                                     k=n_res)
-        n_res = res.shape[1]
-        if maxnumres is not None and n_res == maxnumres:
-            return None, None
-        sets_dict = {k + 1: covset[res[0, k]]
-                     for k in range(n_res)}
-        solution = cr.correlated(sets_dict, tgt_values)[0:2]
-        bestsol = deepcopy((solution[0], solution[1], res[0]))
-        improves = [deepcopy(bestsol)]
-
-        placement_hist = np.array(res)
-
-        while (len(improves) < enum):
-            new = False
-
-            # build neighborhood
-            neigh = {}
-            for i, r in enumerate(bestsol[2]):
-                others = np.delete(bestsol[2], i)
-                if len(others) > 0:
-                    tocov = np.all(short_set[others] == 0,
-                                   axis=0)
-                else:
-                    tocov = np.full(tgt_values.shape[0], True)
-                tocov[notgts] = False
-
-                temp_neigh = np.all(short_set[:, tocov] >= 1, axis=1)
-                temp_neigh[bestsol[2]] = False
-                nonz = temp_neigh.nonzero()[0]
-                if len(nonz) > 0:
-                    neigh[r] = collections.deque(nonz)
-
-            # explore neighborhood
-            res = deepcopy(bestsol[2])
-            while len(neigh) > 0:
-                if len(improves) >= enum:
-                    break
-                oldpl = random.choice(list(neigh.keys()))
-                newpl = neigh[oldpl].pop()
-                if len(neigh[oldpl]) == 0:
-                    del neigh[oldpl]
-                # swap resource
-                temp_res = deepcopy(res)
-                temp_res[temp_res == oldpl] = newpl
-                if np.any(np.all(placement_hist == temp_res, axis=1)):
-                    continue
-                placement_hist = np.vstack((placement_hist, temp_res))
-                sets_dict = {k + 1: covset[temp_res[k]]
-                             for k in range(n_res)}
-                solution = cr.correlated(sets_dict, tgt_values)[0:2]
-                improves.append(solution + (temp_res,))
-                if solution[0] > bestsol[0]:
-                    bestsol = deepcopy((solution[0], solution[1], temp_res))
-                    new = True
-                    break
-
-            if not new:
-                break
-
-        return bestsol, improves
-
-    def local_search_v2(n_res=None):
-
-        def build_neigh(loc_res, loc_node_sort):
-            neigh = {}
-            for i, r in enumerate(loc_res):
-                others = np.delete(loc_res, i)
-                if len(others) > 0:
-                    tocov = np.all(short_set[others] == 0, axis=0)
-                else:
-                    tocov = np.full(tgt_values.shape[0], True)
-                tocov[notgts] = False
-
-                temp_neigh = np.all(short_set[:, tocov] >= 1, axis=1)
-                temp_neigh[loc_res] = False
-                temp_neigh = temp_neigh.nonzero()[0]
-                if len(temp_neigh) > 0:
-                    sortneigh = np.in1d(loc_node_sort, temp_neigh,
-                                        assume_unique=True)
-                    neighbors = loc_node_sort[sortneigh.nonzero()[0]]
-                    neigh[r] = collections.deque(neighbors)
-            return neigh
-
-        def swap_min(resources, loc_neigh, score, ot):
-            sw_res = deepcopy(resources)
+        def swap_min(resources, loc_neigh, score, tabu, better=False):
             if len(loc_neigh) == 0:
-                return sw_res, None, None
+                return resources, None, None
+            sw_res = deepcopy(resources)
             keys = np.array(loc_neigh.keys())
-            notabu = np.logical_not(np.in1d(keys, ot))
+            notabu = np.logical_not(np.in1d(keys, tabu))
             if not np.any(notabu):
                 notabu[:] = True
-            oldpl = max(keys[notabu], key=lambda x: score[neigh[x][-1]])
+            oldpl = min(keys[notabu], key=lambda x: score[x])
             newpl = loc_neigh[oldpl].pop()
             if len(loc_neigh[oldpl]) == 0:
                 del loc_neigh[oldpl]
-            ot.append(oldpl)
+            if better:
+                if score[oldpl] >= score[newpl]:
+                    if oldpl in loc_neigh.keys():
+                        del(loc_neigh[oldpl])
+                    return swap_min(resources, loc_neigh,
+                                    score, tabu, better=True)
+            tabu.append(oldpl)
             sw_res[sw_res == oldpl] = newpl
             return sw_res, oldpl, newpl
 
-        tgts = tgt_values.nonzero()[0]
-        notgts = (tgt_values <= 0).nonzero()[0]
+        tgts = node_values.nonzero()[0]
+        notgts = (node_values <= 0).nonzero()[0]
         if n_res is None:
             n_res_str = 'minimum'
         else:
@@ -366,17 +278,16 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                   n_res_str + " resources")
 
         # compute score function
-        score = short_path + 1.0
-        # pdb.set_trace()
-        for ix, sco in enumerate(score):
-            sco = [(1 / s) if (s > 0) else 0 for s in sco]
-            scouni, scocount = np.unique(sco, return_counts=True)
-            scodict = dict(zip(scouni, scocount))
-            score[ix] = [s / scodict[s] for s in sco]
-
-        score *= tgt_values
-        temp_score = np.sum(score, axis=1)
-        score = tgt_values
+        score = node_values
+        short_path[short_set == 0] = -1
+        if enumtype == 5:
+            score = short_path + 1.0
+            # pdb.set_trace()
+            for ix, sco in enumerate(score):
+                score[ix] = [(1 / s) if (s > 0) else 0 for s in sco]
+            score *= node_values
+            temp_score = np.sum(score, axis=1)
+            score = temp_score
         node_sort = np.argsort(score)
 
         res, _ = sc.set_cover_solver(short_set[:, tgts],
@@ -385,58 +296,48 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         if maxnumres is not None and n_res == maxnumres:
             return None, None
 
-        old_tabu = collections.deque([])
+        place_tabu = collections.deque([])
         res = res[0]
-        endinit = False
 
         while True:
-            neigh = build_neigh(res, node_sort)
-            while True:
-                if len(neigh) == 0:
-                    endinit = True
-                    break
-                newres, old, new = swap_min(res, neigh, score,
-                                            old_tabu)
-                if score[old] >= score[new]:
-                    if old in neigh.keys():
-                        del(neigh[old])
-                    continue
-                res = newres
-                break
-            if endinit:
+            neigh = build_neigh(res, notgts, node_sort)
+            res, old, new = swap_min(res, neigh, score,
+                                     place_tabu, better=True)
+            if old is None:
                 break
 
-        sets_dict = {k + 1: covset[res[k]]
-                     for k in range(n_res)}
-        solution = cr.correlated(sets_dict, tgt_values)[0:2]
+        sets_dict = {k + 1: covset[res[k]] for k in range(n_res)}
+        solution = cr.correlated(sets_dict, node_values)[0:2]
         bestsol = deepcopy((solution[0], solution[1], res))
         improves = [deepcopy(bestsol)]
 
         placement_hist = np.empty((1, res.shape[0]))
         placement_hist[0] = res
 
-        old_tabu = collections.deque([], maxlen=(n_res))
+        place_tabu = collections.deque([], maxlen=(n_res))
 
         while (len(improves) < enum):
+            if (sigrec.kill_now or sigrec.jump):
+                break
             new = False
 
             # build neighborhood
-            neigh = build_neigh(res, node_sort)
+            neigh = build_neigh(res, notgts, node_sort)
 
             # explore neighborhood
             while len(neigh) > 0:
-                if len(improves) >= enum:
+                if sigrec.kill_now or sigrec.jump or (len(improves) >= enum):
                     break
 
                 # choose resources
                 temp_res, oldpl, newpl = swap_min(res, neigh, score,
-                                                  old_tabu)
+                                                  place_tabu)
                 if np.any(np.all(placement_hist == temp_res, axis=1)):
                     continue
                 placement_hist = np.vstack((placement_hist, temp_res))
                 sets_dict = {k + 1: covset[temp_res[k]]
                              for k in range(n_res)}
-                solution = cr.correlated(sets_dict, tgt_values)[0:2]
+                solution = cr.correlated(sets_dict, node_values)[0:2]
                 improves.append(solution + (temp_res,))
                 if solution[0] > bestsol[0]:
                     bestsol = deepcopy((solution[0], solution[1], temp_res))
@@ -451,7 +352,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
     if (enumtype is None or
             covset is None or
-            tgt_values is None or
+            node_values is None or
             sigrec is None or
             short_set is None):
         raise ValueError('Some parameters are not defined')
@@ -464,14 +365,9 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
     elif enumtype == 2:
         return double_oracle
     elif enumtype == 3:
-        depthfirst = True
-        return double_oracle
-    elif enumtype == 4:
-        return local_search
-    elif enumtype == 5:
         return double_oracle_v2
-    elif enumtype >= 6:
-        return local_search_v2
+    elif (enumtype == 4) or (enumtype == 5):
+        return local_search
     else:
         raise ValueError('Enumeration type ' + str(enumtype) +
-                         ', wrongly defined')
+                         ' does not exists')
