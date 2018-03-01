@@ -111,6 +111,9 @@ __pycache__/
 file
 .envrc
 .idea
+.cache
+pidprocesses.txt
+*.log
 
 # Mac
 .DS_Store

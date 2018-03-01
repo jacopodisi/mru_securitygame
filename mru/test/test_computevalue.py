@@ -914,7 +914,7 @@ class TestComputeValue5(unittest.TestCase):
         self.assertEqual(strat[3], res_strat[3], msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
-    def test_compute_values_6(self):
+    def test_compute_values_5(self):
         compvalres = cv.compute_values(self.G, True, enum=10, enumtype=5)
         game_val = compvalres[0]
         plac = compvalres[1]
