@@ -94,10 +94,10 @@ def load_graph(ntgts, dead, den, gix):
     return load_file(FILEDIR + graph_path + ".pickle")
 
 
-def save_results(ntgts, dead, den, gix, result, enumtype=""):
+def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None):
     """save results in file
     example -> ./file/
-                  results/
+                  results10(apx1)/
                     res_graphs_20_ntgts/
                       res_instance_ntgts_20_den_25_dead_4_graphix_0_ix_0.pickle
     Parameter
@@ -113,12 +113,22 @@ def save_results(ntgts, dead, den, gix, result, enumtype=""):
     den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
     enum = str(enumtype)
-    dirname = "results" + enum + "/res_graphs_" + str(ntgts) + "_ntgts/"
+
+    if apxtype is None:
+        resdir = "results" + enum
+    else:
+        resdir = "results" + enum + "apxt" + str(apxtype)
+
+    dirname = resdir + "/res_graphs_" + str(ntgts) + "_ntgts/"
+
     if not os.path.exists(FILEDIR + dirname):
         os.makedirs(FILEDIR + dirname)
+
     filename = "res_instance_ntgts_" + str(ntgts) + "_den_" + den + "_dead_"\
                + str(dead) + "_graphix_" + str(gix)
+
     fn = save_file(result, dirname + filename)
+
     log.debug('saved results in ' + fn)
 
     graph_path = "graphs/graphs_" + ntgts + "_ntgts/instance_ntgts_"\
@@ -130,7 +140,7 @@ def save_results(ntgts, dead, den, gix, result, enumtype=""):
     return fn
 
 
-def load_results(ntgts, dead, den, gix, enumtype="", resix=0):
+def load_results(ntgts, dead, den, gix, enumtype="", apxtype="", resix=0):
 
     ntgts = str(ntgts)
     dead = str(dead)
@@ -138,7 +148,14 @@ def load_results(ntgts, dead, den, gix, enumtype="", resix=0):
     gix = str(gix)
     resix = str(resix)
     enum = str(enumtype)
-    res_path = "results" + enum + "/res_graphs_" + ntgts\
+    apxtype = str(apxtype)
+
+    if apxtype == "":
+        resdir = "results" + enum
+    else:
+        resdir = "results" + enum + "apxt" + apxtype
+
+    res_path = resdir + "/res_graphs_" + ntgts\
                + "_ntgts/res_instance_ntgts_" + ntgts + "_den_" + den\
                + "_dead_" + dead + "_graphix_" + gix + "_ix_" + resix
     try:

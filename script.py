@@ -23,11 +23,11 @@ from mru.patrolling.correlated import correlated_row_gen as cr
 
 def read_opt(str_opt):
     timeout = False
-    logfile = den = ntgts = dead = ix = poolname = None
+    logfile = den = ntgts = dead = ix = poolname = apxtype = None
     enumtype = "1"
     enumit = "10"
     options, _ = getopt.getopt(str_opt,
-                               'd:t:D:i:l:p:n:e:T',
+                               'd:t:D:i:l:p:n:e:a:T',
                                ['density=',
                                 'ntarget=',
                                 'deadline=',
@@ -36,6 +36,7 @@ def read_opt(str_opt):
                                 'poolname=',
                                 'enumiter=',
                                 'enumtype=',
+                                'apxtype=',
                                 'timeout'])
 
     for opt, arg in options:
@@ -55,15 +56,16 @@ def read_opt(str_opt):
             enumit = arg
         elif opt in ('-e', '--enumtype'):
             enumtype = arg
+        elif opt in ('-a', '--apxtype'):
+            apxtype = arg
         elif opt in ('-T', '--timeout'):
             timeout = True
 
-    return den, ntgts, dead, ix, timeout, logfile, enumtype, enumit, poolname
+    return den, ntgts, dead, ix, timeout, enumtype, enumit, apxtype, logfile, poolname
 
 
-def run(den, ntgts, dead, ix,
-        timeout=False, logfile='script.log',
-        enumtype=1, enumit=10):
+def run(den, ntgts, dead, ix, timeout=False, enumtype=1,
+        enumit=10, apxtype=None, logfile='script.log'):
 
     if logfile is None:
         logfile = 'script.log'
@@ -87,15 +89,16 @@ def run(den, ntgts, dead, ix,
     log.debug("START computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
     log.debug("options timeout=" + str(timeout) + " enumtype=" +
-              str(enumtype) + " enumit=" + str(enumit))
+              str(enumtype) + " enumit=" + str(enumit) + " apx=" + str(apxtype))
 
     covset = None
-    for i in range(2):
-        oldres = io.load_results(ntgts, dead, den, ix, enumtype=(i + 1))
-        if oldres is not None:
-            covset = oldres[4]
-            log.debug('using covering set already computed')
-            break
+    if apxtype is None:
+        for i in range(2):
+            oldres = io.load_results(ntgts, dead, den, ix, enumtype=(i + 1))
+            if oldres is not None:
+                covset = oldres[4]
+                log.debug('using covering set already computed')
+                break
 
     if timeout:
         with cr.time_limit(36000):
@@ -103,15 +106,17 @@ def run(den, ntgts, dead, ix,
                                        rm_dom=True,
                                        enum=enumit,
                                        covset=covset,
-                                       enumtype=enumtype)
+                                       enumtype=enumtype,
+                                       apxtype=apxtype)
     else:
         result = cv.compute_values(graph,
                                    rm_dom=True,
                                    enum=enumit,
                                    covset=covset,
-                                   enumtype=enumtype)
+                                   enumtype=enumtype,
+                                   apxtype=apxtype)
 
-    io.save_results(ntgts, dead, den, ix, result, enumtype)
+    io.save_results(ntgts, dead, den, ix, result, enumtype, apxtype)
 
     log.debug("END computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
@@ -122,14 +127,12 @@ def run(den, ntgts, dead, ix,
 def main():
     path = os.path.dirname(os.path.realpath(__file__))
     options = read_opt(sys.argv[1:])
-    enumtp = options[6]
-    enumit = options[7]
 
     # write in pidprocesses.txt the pid of the process
     with open(path + "/pidprocesses.txt", "a") as fin:
         fcntl.flock(fin, fcntl.LOCK_EX)
-        if options[5] is not None:
-            pidstr = options[5] + ' pid: ' + str(os.getpid())
+        if options[8] is not None:
+            pidstr = options[8] + ' pid: ' + str(os.getpid())
         else:
             pidstr = 'pid: ' + str(os.getpid())
         fin.write(pidstr + '\n')
@@ -143,7 +146,7 @@ def main():
         # from a pool file every other option is chose from terminal
         poolname = options[-1] if options[-1] is not None else path +\
             '/pool.txt'
-        logfile = options[5]
+        logfile = options[-2]
         if not os.path.isfile(poolname):
             m = 'File {} do not exist'.format(poolname)
             raise IOError(m)
@@ -157,8 +160,22 @@ def main():
                 with open(poolname, "w") as fout:
                     fout.writelines(data[1:])
                 fcntl.flock(fin, fcntl.LOCK_UN)
-            options = read_opt(str_options)[:-4]
-            run(*(options + (logfile, enumtp, enumit)))
+            pooloptions = read_opt(str_options)[:-2]
+            print pooloptions
+            # timeout
+            if pooloptions[4] is None:
+                pooloptions[4] = options[4]
+            # enumtype
+            if pooloptions[5] is None:
+                pooloptions[5] = options[5]
+            # enumit
+            if pooloptions[6] is None:
+                pooloptions[6] = options[6]
+            # apxtype
+            if pooloptions[7] is None:
+                pooloptions[7] = options[7]
+            print pooloptions
+            run(*(pooloptions + (logfile,)))
 
 
 if __name__ == '__main__':

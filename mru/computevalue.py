@@ -7,15 +7,14 @@ import pdb
 from . import ILP_solver as sc
 from . import signal_receiver as sr
 from . import placement_enum as pe
+from . import apx_covering_sets as apx
 
 from scipy import sparse
 from scipy.sparse import csgraph
-from .srg import computecovsets as cs
 from .srg import graph as gr
+from .srg import computecovsets as cs
 from .patrolling.correlated import correlated_row_gen as cr
 
-
-MTYPE = np.uint8
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ def reformat(solutionlist, improveslist):
     return game_values, placements, strategies, impro
 
 
-def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
+def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1, apxtype=None):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
     Parameters
@@ -57,6 +56,8 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     enum: number of solution to iterate to find the best one
     covset: covering set (if already computed)
     enumtype: type of algorithm used to iterate through different solutions
+    apxtype: type of permutation to be used in the apx_covering_sets. The approximation
+             will be used only if an "apxtype" will be specified.
 
     Return
     ------
@@ -79,11 +80,13 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     """
     enum = int(enum)
     enumtype = int(enumtype)
+    if apxtype is not None:
+        apxtype = int(apxtype)
     signal_receiver = sr.SignalReceiver(log)
     log.debug("start compute_values function")
     start_time = time.clock()
     tgts = graph.getTargets()
-    tgt_values = np.array([v.value for v in graph.vertices])
+    node_values = np.array([v.value for v in graph.vertices])
 
     solutionlist = {}
     times_list = {}
@@ -96,7 +99,8 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
     if covset is None:
         log.debug("compute covering routes")
         st_time = time.clock()
-        csr = compute_covering_routes(graph, tgts, rm_dominated=rm_dom)
+        csr = compute_covering_routes(graph, tgts, sp=shortest_paths,
+                                      rm_dominated=rm_dom, apxtype=apxtype)
         times_list[1] = time.clock() - st_time
     else:
         csr = covset
@@ -120,7 +124,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1):
         return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
 
     enumfunc = pe.enumfunction(enumtype=enumtype, covset=csr,
-                               tgt_values=tgt_values,
+                               node_values=node_values,
                                sigrec=signal_receiver,
                                enum=enum,
                                short_set=shortest_matrix,
@@ -178,6 +182,8 @@ def compute_shortest_sets(graph_game, targets):
     ------
     shortest_matrix: numpy matrix of (|nodes| x |nodes|), where the row
                    0 represent the shortest_set of node 0 and so on..
+    shortest_paths: numpy matrix of (|nodes| x |nodes|), where the row
+                    0 represent the shortest path cost of node 0 and so on..
     """
     if not np.all(
             np.in1d(targets, graph_game.getTargets())):
@@ -186,21 +192,22 @@ def compute_shortest_sets(graph_game, targets):
     matrix = graph_game.getAdjacencyMatrix()
     if gr.inf == 999:
         matrix[matrix == 999] = 0
+
     deadlines = {t: graph_game.getVertex(t).deadline for t in targets}
+
     shortest_paths, pred = csgraph.shortest_path(
         matrix, directed=False, unweighted=True, return_predecessors=True)
-    shortest_matrix = np.zeros(shape=matrix.shape, dtype=MTYPE)
-    maxdl = -1
+
+    shortest_matrix = np.zeros(shape=matrix.shape, dtype=bool)
+
     for tgt, dl in deadlines.iteritems():
         covered = shortest_paths[:, tgt] <= dl
         shortest_matrix[covered, tgt] = 1
-        if dl > maxdl:
-            maxdl = dl
-    shortest_paths[shortest_matrix == 0] = -1
+
     return shortest_matrix, shortest_paths
 
 
-def compute_covering_routes(graph_game, targets, rm_dominated=False):
+def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, apxtype=None):
     """ compute all the covering routes, from each vertex, for the given
         set of targets. The covering routes will contain always the starting
         vertex, wheteher it is a target or not. Other non-target vertex will
@@ -211,6 +218,14 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False):
     targets: list of targets for which compute the covering routes
     rm_dominated: If set to True the dominanted route for each vertex
                   are eliminated
+    apxtype: define which permutation is used during the computation of the apx_covering_sets,
+             the approximation will be performed only if a type will be defined.
+             1  --> random order
+             2  --> increasing distance from v0
+             3  --> increasing deadline
+             4  --> increasing order of excess time (dead(t) - dist(v0, t))
+             >4 --> random order repetead apxtype-times
+             <1 --> every type of permutation + random order repeated (-apxtype)-times
 
     Return
     ------
@@ -218,56 +233,51 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False):
                                       "vertex_number2": csr_matrix2, ...}
                   csr_matrix represent the covering sets of the vertex
     """
+    everytgts = graph_game.getTargets()
     if not np.all(
-            np.in1d(targets, graph_game.getTargets())):
+            np.in1d(targets, everytgts)):
         raise ValueError('Targets in input of compute_covering_routes function'
                          'are not tartgets of the graph_game')
-    n_vertices = len(graph_game.getVertices())
+    vertices = graph_game.getVertices()
+    deadlines = np.array([v.deadline for v in vertices])
+    n_vertices = len(vertices)
     csr_matrices = {}
+
     for ver in range(n_vertices):
-        covset = cs.computeCovSet(graph_game, ver, targets)
-        covset_matrix = np.zeros((len(covset), n_vertices), dtype=MTYPE)
-        l_covset = len(covset)
-        if rm_dominated:
-            for route in range(l_covset):
+        if apxtype is not None and sp is None:
+            raise ValueError("No shortest path cost with apxtype specified")
+        if apxtype is None:
+            covset = cs.computeCovSet(graph_game, ver, targets)
+            covset_matrix = np.zeros((len(covset), n_vertices), dtype=bool)
+            for route in range(len(covset)):
                 covset_matrix[route, covset[route][0]] = 1
-            covset_matrix = np.vstack({tuple(row) for row in covset_matrix})
-            for route in range(covset_matrix.shape[0]):
-                dom_rows = covset_matrix[route] <= covset_matrix
-                dom = np.all(dom_rows, axis=1)
-                dom[route] = False
-                if np.any(dom):
-                    covset_matrix[route] = 0
-            covset_matrix = covset_matrix[~np.all(
-                covset_matrix == 0, axis=1)]
+        elif apxtype in [2, 3, 4]:
+            covset_matrix = apx.compute_apxcoveringsets(ver, sp, targets,
+                                                        deadlines, apxtype)
+        elif apxtype > 4 or apxtype == 1:
+            covset_matrix = np.empty((0, n_vertices), dtype=bool)
+            for _ in range(apxtype):
+                temp_covset = apx.compute_apxcoveringsets(ver, sp, targets,
+                                                          deadlines, apxtype)
+                covset_matrix = np.vstack((covset_matrix, temp_covset))
+        elif apxtype < 1:
+            apxnum = - apxtype
+            covset_matrix = np.empty((0, n_vertices), dtype=bool)
+            for apxtp in range(apxnum + 4):
+                temp_covset = apx.compute_apxcoveringsets(ver, sp, targets,
+                                                          deadlines, apxtp)
+                covset_matrix = np.vstack((covset_matrix, temp_covset))
         else:
-            for route in range(l_covset):
-                covset_matrix[route, covset[route][0]] = 1
+            m = "Apxtype " + str(apxtype) + " does not exists."
+            raise ValueError(m)
+
+        if rm_dominated:
+            best = np.ones(covset_matrix.shape[0], dtype=bool)
+            for i, c in enumerate(covset_matrix):
+                if best[i]:
+                    best[best] = np.logical_not(np.all(covset_matrix[best] <= c, axis=1))
+                    best[i] = True
+            covset_matrix = covset_matrix[best]
 
         csr_matrices[ver] = sparse.csr_matrix(covset_matrix)
     return csr_matrices
-
-
-if __name__ == '__main__':
-    import iomanager as io
-    domopt = True
-    nodes = 10
-    # mat = gr.generateRandMatrix(nodes, 0.25, density=True)
-    # rand_graph = gr.generateRandomGraph(mat, np.shape(mat)[0], 1, 4, 4)
-    file_gr = "graph_n" + str(nodes) + "_d0.25_dead4_ix_1"
-    # io.save(rand_graph, filename=file_gr)
-    rand_graph = io.load(io.FILEDIR + file_gr + ".pickle")
-
-    with cr.time_limit(6):
-        result = compute_values(rand_graph, rm_dominated=domopt, enum=10)
-
-    print("game values: " + str(result[0]))
-    print("placements: " + str(result[1]))
-    print("strategies: " + str(result[2]))
-    print("comptime:" + str(result[3]))
-    file_res = ''
-    if domopt:
-        file_res = "results_" + file_gr + "vps_dom"
-    else:
-        file_res = "results_" + file_gr + "vps"
-    # io.save_results(result, filename=file_res)
