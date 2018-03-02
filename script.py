@@ -163,13 +163,13 @@ def main():
             pooloptions = read_opt(str_options)[:-2]
             print pooloptions
             # timeout
-            if pooloptions[4] is None:
+            if not pooloptions[4]:
                 pooloptions[4] = options[4]
             # enumtype
-            if pooloptions[5] is None:
+            if pooloptions[5] == '1':
                 pooloptions[5] = options[5]
             # enumit
-            if pooloptions[6] is None:
+            if pooloptions[6] == '10':
                 pooloptions[6] = options[6]
             # apxtype
             if pooloptions[7] is None:

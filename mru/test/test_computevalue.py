@@ -156,7 +156,6 @@ class TestComputeValue1(unittest.TestCase):
         self.assertEqual(strat[2], res_strat[2], msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
-
     def test_compute_values_apx3(self):
         compvalres = cv.compute_values(self.G, True, apxtype=2)
         game_val = compvalres[0]
@@ -173,7 +172,6 @@ class TestComputeValue1(unittest.TestCase):
         self.assertEqual(plac, res_plac, msg=ms)
         self.assertEqual(strat, res_strat, msg=ms)
         self.assertEqual(num_iter, res_num_iter, msg=ms)
-
 
     def test_compute_values_apx4(self):
         compvalres = cv.compute_values(self.G, True, apxtype=3)
