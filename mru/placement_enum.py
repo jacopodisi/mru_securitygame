@@ -17,23 +17,26 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         function used to enumerate the solutions.
     Parameters
     ----------
-    enumtype: type of algorithm used to iterate through different solutions
+    enumtype: type of algorithm used to iterate through different solutions.
+              1 --> gurobi enumeration
+              2 --> double oracle (computing each time the set cover)
+              3 --> double oracle v2 (using the neighborhood)
+              4 --> local search + score(tgt_value)
+              5 --> local_search + score(tgt_value, distance)
     covset: covering set of every node of the graph
-    node_values: value of each node (included non targets)
-    sigrec: instance of signal receiver
-    short_set: shortest set of every node
     maxnumres: maximum number of resources (optional)
-    enum: number of solution to iterate to find the best one
+    node_values: value of each node, included non targets
+    sigrec: instance of signal receiver
+    short_path: shortest path cost matrix
+    enum: number of solution to iterate to find the best one (optional)
+    short_set: shortest set matrix covered targets. NB: the shortest set,
+               from each node to every node, not just the targets.
+               numpy matrix (|nodes|, |nodes|)
 
     Return
     ------
     bestsol: best computed solution for the given number of resources
-    num_iter: number of iterated solution
-
-    NB
-    --
-    short_set must be the shortest set from each node to every node,
-    not just the targets
+    improves: improvement computed
     """
 
     def build_neigh(loc_res, nontgts, loc_node_sort=None):
@@ -245,6 +248,9 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         return bestsol, improves
 
     def local_search(n_res=None):
+        """ Compute correlated solution for defender with multi resources,
+        enumerating through different placements using the local search.
+        """
 
         def swap_min(resources, loc_neigh, score, tabu, better=False):
             if len(loc_neigh) == 0:
@@ -279,15 +285,12 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
         # compute score function
         score = node_values
-        short_path[short_set == 0] = -1
         if enumtype == 5:
+            short_path[short_set == 0] = -1
             score = short_path + 1.0
-            # pdb.set_trace()
             for ix, sco in enumerate(score):
                 score[ix] = [(1 / s) if (s > 0) else 0 for s in sco]
-            score *= node_values
-            temp_score = np.sum(score, axis=1)
-            score = temp_score
+            score = np.sum(score * node_values, axis=1)
         node_sort = np.argsort(score)
 
         res, _ = sc.set_cover_solver(short_set[:, tgts],
@@ -355,7 +358,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             node_values is None or
             sigrec is None or
             short_set is None):
-        raise ValueError('Some parameters are not defined')
+        raise ValueError('Missing some parameters')
 
     enumtype = int(enumtype)
     enum = int(enum)
@@ -366,7 +369,11 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         return double_oracle
     elif enumtype == 3:
         return double_oracle_v2
-    elif (enumtype == 4) or (enumtype == 5):
+    elif enumtype == 4:
+        return local_search
+    elif enumtype == 5:
+        if short_path is None:
+            raise ValueError('Missing short_path parmater')
         return local_search
     else:
         raise ValueError('Enumeration type ' + str(enumtype) +
