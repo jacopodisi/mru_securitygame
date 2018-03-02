@@ -61,7 +61,7 @@ def read_opt(str_opt):
         elif opt in ('-T', '--timeout'):
             timeout = True
 
-    return den, ntgts, dead, ix, timeout, enumtype, enumit, apxtype, logfile, poolname
+    return [den, ntgts, dead, ix, timeout, enumtype, enumit, apxtype, logfile, poolname]
 
 
 def run(den, ntgts, dead, ix, timeout=False, enumtype=1,
@@ -175,7 +175,7 @@ def main():
             if pooloptions[7] is None:
                 pooloptions[7] = options[7]
             print pooloptions
-            run(*(pooloptions + (logfile,)))
+            run(*(pooloptions + [logfile]))
 
 
 if __name__ == '__main__':
