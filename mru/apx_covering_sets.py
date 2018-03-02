@@ -14,9 +14,9 @@ def compute_apxcoveringsets(v0, sp, tgts, dead, type_permut):
     tgt: list of targets for which compute the covering sets.
     dead: list of deadlines of every nodes (including non target ones).
     type_permut: define which permutation is used during the computation:
-                 2 --> increasing distance from v0
-                 3 --> increasing deadline
-                 4 --> increasing order of excess time (dead(t) - dist(v0, t))
+                 1 --> increasing distance from v0
+                 2 --> increasing deadline
+                 3 --> increasing order of excess time (dead(t) - dist(v0, t))
                  others --> random order
 
     Return
@@ -27,11 +27,11 @@ def compute_apxcoveringsets(v0, sp, tgts, dead, type_permut):
     """
 
     def tgt_permutation():
-        if type_permut == 2:
+        if type_permut == 1:
             temp_permut = np.argsort(sp[v0])
-        elif type_permut == 3:
+        elif type_permut == 2:
             temp_permut = np.argsort(dead)
-        elif type_permut == 4:
+        elif type_permut == 3:
             temp_permut = np.argsort(dead - sp[v0])
         else:
             temp_permut = np.random.permutation(len(dead))

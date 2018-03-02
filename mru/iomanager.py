@@ -140,7 +140,7 @@ def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None):
     return fn
 
 
-def load_results(ntgts, dead, den, gix, enumtype="", apxtype="", resix=0):
+def load_results(ntgts, dead, den, gix, enumtype="1", apxtype="", resix=0):
 
     ntgts = str(ntgts)
     dead = str(dead)
@@ -161,5 +161,5 @@ def load_results(ntgts, dead, den, gix, enumtype="", apxtype="", resix=0):
     try:
         result = load_file(FILEDIR + res_path + ".pickle")
     except IOError:
-        result = None
+        raise IOError(res_path)
     return result

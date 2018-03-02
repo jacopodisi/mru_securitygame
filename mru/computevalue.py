@@ -71,9 +71,9 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1, apxtype
     time_list: list of computation times of each operation(shortest_sets,
                                                            covering_routes,
                                                            max_resources,
-                                                           setcover_min,
-                                                           correlated min,
-                                                           setcover_k,
+                                                           remove_dom,
+                                                           correlated_min,
+                                                           correlated_k,
                                                            tot_time
                                                            )
     csr: covering sets of every node
@@ -101,13 +101,14 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1, apxtype
     if covset is None:
         log.debug("compute covering routes")
         st_time = time.clock()
-        csr = compute_covering_routes(graph, tgts, sp=shortest_paths,
+        sol = compute_covering_routes(graph, tgts, sp=shortest_paths,
                                       rm_dominated=rm_dom, apxtype=apxtype)
         times_list[1] = time.clock() - st_time
+        csr = sol[0]
+        times_list[3] = sol[1]
     else:
         csr = covset
-    f_sol = reformat(solutionlist, improves)
-    return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
+
     # optimum resource game solution
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, improves)
@@ -223,12 +224,11 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
                   are eliminated
     apxtype: define which permutation is used during the computation of the apx_covering_sets,
              the approximation will be performed only if a type will be defined.
-             1  --> random order
-             2  --> increasing distance from v0
-             3  --> increasing deadline
-             4  --> increasing order of excess time (dead(t) - dist(v0, t))
-             >4 --> random order repetead apxtype-times
-             <1 --> every type of permutation + random order repeated (-apxtype)-times
+             0  --> random order
+             1  --> increasing distance from v0
+             2  --> increasing deadline
+             3  --> increasing order of excess time (dead(t) - dist(v0, t))
+             >3 --> every type of permutation + random order repeated (apxtype)-times
 
     Return
     ------
@@ -245,6 +245,7 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
     deadlines = np.array([v.deadline for v in vertices])
     n_vertices = len(vertices)
     csr_matrices = {}
+    timermdom = 0
 
     for ver in range(n_vertices):
         if apxtype is not None and sp is None:
@@ -254,19 +255,12 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
             covset_matrix = np.zeros((len(covset), n_vertices), dtype=MTYPE)
             for route in range(len(covset)):
                 covset_matrix[route, covset[route][0]] = 1
-        elif apxtype in [2, 3, 4]:
+        elif apxtype in [0, 1, 2, 3]:
             covset_matrix = apx.compute_apxcoveringsets(ver, sp, targets,
                                                         deadlines, apxtype)
-        elif apxtype > 4 or apxtype == 1:
+        elif apxtype > 3:
             covset_matrix = np.empty((0, n_vertices), dtype=MTYPE)
-            for _ in range(apxtype):
-                temp_covset = apx.compute_apxcoveringsets(ver, sp, targets,
-                                                          deadlines, apxtype)
-                covset_matrix = np.vstack((covset_matrix, temp_covset))
-        elif apxtype < 1:
-            apxnum = - apxtype
-            covset_matrix = np.empty((0, n_vertices), dtype=MTYPE)
-            for apxtp in range(apxnum + 4):
+            for apxtp in range(apxtype + 3):
                 temp_covset = apx.compute_apxcoveringsets(ver, sp, targets,
                                                           deadlines, apxtp)
                 covset_matrix = np.vstack((covset_matrix, temp_covset))
@@ -274,6 +268,7 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
             m = "Apxtype " + str(apxtype) + " does not exists."
             raise ValueError(m)
 
+        strm = time.clock()
         if rm_dominated:
             best = np.full(covset_matrix.shape[0], True)
             for i, c in enumerate(covset_matrix):
@@ -281,6 +276,7 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
                     best[best] = np.logical_not(np.all(covset_matrix[best] <= c, axis=1))
                     best[i] = True
             covset_matrix = covset_matrix[best]
+        timermdom += time.clock() - strm
 
         csr_matrices[ver] = sparse.csr_matrix(covset_matrix)
-    return csr_matrices
+    return csr_matrices, timermdom

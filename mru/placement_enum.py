@@ -45,9 +45,9 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             # compute target to be covered
             others = np.delete(loc_res, i)
             if len(others) > 0:
-                tocov = np.all(short_set[others] == 0, axis=0, dtype=True)
+                tocov = np.all(short_set[others] == 0, axis=0)
             else:
-                tocov = np.full(short_set.shape[0], True, dtype=True)
+                tocov = np.full(short_set.shape[0], True)
             tocov[nontgts] = False
 
             # compute neighbors

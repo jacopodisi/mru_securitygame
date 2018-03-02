@@ -46,7 +46,7 @@ class TestComputeValue1(unittest.TestCase):
 
     def test_compute_covering_routes(self):
         f = cv.compute_covering_routes
-        cov_routes = f(self.G, self.G.getTargets())
+        cov_routes = f(self.G, self.G.getTargets())[0]
 
         result0 = cov_routes[self.v0.getVertexNumber()].toarray()
         cov_route_0 = np.array(
@@ -85,7 +85,7 @@ class TestComputeValue1(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok4, msg=ms)
 
-        dom_cov_routes = f(self.G, self.G.getTargets(), True)
+        dom_cov_routes = f(self.G, self.G.getTargets(), True)[0]
         dom_result0 = dom_cov_routes[self.v0.getVertexNumber()].toarray()
         dom_cov_route_0 = np.array(
             [[1, 1, 1, 1, 0],
@@ -135,12 +135,11 @@ class TestComputeValue1(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_apx1(self):
-        cv.compute_values(self.G, False, apxtype=1)
-        cv.compute_values(self.G, True, apxtype=1)
-
+        cv.compute_values(self.G, apxtype=10)
+        cv.compute_values(self.G, True, apxtype=10)
 
     def test_compute_values_apx2(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=2)
+        compvalres = cv.compute_values(self.G, True, apxtype=1)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -159,7 +158,7 @@ class TestComputeValue1(unittest.TestCase):
 
 
     def test_compute_values_apx3(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=3)
+        compvalres = cv.compute_values(self.G, True, apxtype=2)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -177,7 +176,7 @@ class TestComputeValue1(unittest.TestCase):
 
 
     def test_compute_values_apx4(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=4)
+        compvalres = cv.compute_values(self.G, True, apxtype=3)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -235,7 +234,7 @@ class TestComputeValue2(unittest.TestCase):
 
     def test_compute_covering_routes(self):
         f = cv.compute_covering_routes
-        cov_routes = f(self.G, self.G.getTargets())
+        cov_routes = f(self.G, self.G.getTargets())[0]
 
         result0 = cov_routes[self.v0.getVertexNumber()].toarray()
         cov_route_0 = np.array([[1, 0, 0, 0, 0]])
@@ -251,7 +250,7 @@ class TestComputeValue2(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok, msg=ms)
 
-        dom_cov_routes = f(self.G, self.G.getTargets(), True)
+        dom_cov_routes = f(self.G, self.G.getTargets(), True)[0]
         dom_result0 = dom_cov_routes[self.v0.getVertexNumber()].toarray()
         dom_cov_route_0 = np.array(
             [[1, 0, 0, 0, 0]])
@@ -302,7 +301,7 @@ class TestComputeValue2(unittest.TestCase):
         cv.compute_values(self.G, apxtype=10)
 
     def test_compute_values_apx2(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=2)
+        compvalres = cv.compute_values(self.G, True, apxtype=1)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -319,7 +318,7 @@ class TestComputeValue2(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_apx3(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=3)
+        compvalres = cv.compute_values(self.G, True, apxtype=2)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -336,7 +335,7 @@ class TestComputeValue2(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_apx4(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=4)
+        compvalres = cv.compute_values(self.G, True, apxtype=3)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -394,7 +393,7 @@ class TestComputeValue3(unittest.TestCase):
 
     def test_compute_covering_routes(self):
         f = cv.compute_covering_routes
-        cov_routes = f(self.G, self.G.getTargets())
+        cov_routes = f(self.G, self.G.getTargets())[0]
 
         result2 = cov_routes[self.v2.getVertexNumber()].toarray()
         cov_route_2 = np.array(
@@ -425,7 +424,7 @@ class TestComputeValue3(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok, msg=ms)
 
-        dom_cov_routes = f(self.G, self.G.getTargets(), True)
+        dom_cov_routes = f(self.G, self.G.getTargets(), True)[0]
         dom_result2 = dom_cov_routes[self.v2.getVertexNumber()].toarray()
         dom_cov_route_2 = np.array(
             [[1, 1, 1, 1, 1]])
@@ -476,7 +475,7 @@ class TestComputeValue3(unittest.TestCase):
         cv.compute_values(self.G, apxtype=10)
 
     def test_compute_values_apx2(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=2)
+        compvalres = cv.compute_values(self.G, True, apxtype=1)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -491,7 +490,7 @@ class TestComputeValue3(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_apx3(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=3)
+        compvalres = cv.compute_values(self.G, True, apxtype=2)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -506,7 +505,7 @@ class TestComputeValue3(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_apx4(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=4)
+        compvalres = cv.compute_values(self.G, True, apxtype=3)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -562,7 +561,7 @@ class TestComputeValue4(unittest.TestCase):
 
     def test_compute_covering_routes(self):
         f = cv.compute_covering_routes
-        cov_routes = f(self.G, self.G.getTargets())
+        cov_routes = f(self.G, self.G.getTargets())[0]
 
         result2 = cov_routes[self.v2.getVertexNumber()].toarray()
         cov_route_2 = np.array(
@@ -588,7 +587,7 @@ class TestComputeValue4(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok, msg=ms)
 
-        dom_cov_routes = f(self.G, self.G.getTargets(), True)
+        dom_cov_routes = f(self.G, self.G.getTargets(), True)[0]
         dom_result2 = dom_cov_routes[self.v2.getVertexNumber()].toarray()
         dom_cov_route_2 = np.array(
             [[0, 1, 1, 1, 1],
@@ -682,7 +681,7 @@ class TestComputeValue4(unittest.TestCase):
         cv.compute_values(self.G, apxtype=10)
 
     def test_compute_values_apx2(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=2)
+        compvalres = cv.compute_values(self.G, True, apxtype=1)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -700,7 +699,7 @@ class TestComputeValue4(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_apx3(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=3)
+        compvalres = cv.compute_values(self.G, True, apxtype=2)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -718,7 +717,7 @@ class TestComputeValue4(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_apx4(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=4)
+        compvalres = cv.compute_values(self.G, True, apxtype=3)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -784,7 +783,7 @@ class TestComputeValue5(unittest.TestCase):
 
     def test_compute_covering_routes(self):
         f = cv.compute_covering_routes
-        cov_routes = f(self.G, self.G.getTargets())
+        cov_routes = f(self.G, self.G.getTargets())[0]
 
         result0 = cov_routes[self.v0.getVertexNumber()].toarray()
         cov_route_0 = np.array(
@@ -813,7 +812,7 @@ class TestComputeValue5(unittest.TestCase):
             + str(result4) + "\nShould be:\n" + str(cov_route_4)
         self.assertTrue(ok, msg=ms)
 
-        dom_cov_routes = f(self.G, self.G.getTargets(), True)
+        dom_cov_routes = f(self.G, self.G.getTargets(), True)[0]
         dom_result0 = dom_cov_routes[self.v0.getVertexNumber()].toarray()
         dom_cov_route_0 = np.array(
             [[1, 1, 0, 0, 0, 0, 0],
@@ -939,7 +938,7 @@ class TestComputeValue5(unittest.TestCase):
         cv.compute_values(self.G, apxtype=10)
 
     def test_compute_values_apx2(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=2)
+        compvalres = cv.compute_values(self.G, True, apxtype=1)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -959,7 +958,7 @@ class TestComputeValue5(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_apx3(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=3)
+        compvalres = cv.compute_values(self.G, True, apxtype=2)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -979,7 +978,7 @@ class TestComputeValue5(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_apx4(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=4)
+        compvalres = cv.compute_values(self.G, True, apxtype=3)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -1034,7 +1033,7 @@ class TestComputeValue6(unittest.TestCase):
 
     def test_compute_covering_routes(self):
         f = cv.compute_covering_routes
-        cov_routes = f(self.G, self.G.getTargets())
+        cov_routes = f(self.G, self.G.getTargets())[0]
 
         result0 = cov_routes[self.v0.getVertexNumber()].toarray()
         cov_route_0 = np.array(
@@ -1056,7 +1055,7 @@ class TestComputeValue6(unittest.TestCase):
             + str(result2) + "\nShould be:\n" + str(cov_route_2)
         self.assertTrue(ok4, msg=ms)
 
-        dom_cov_routes = f(self.G, self.G.getTargets(), True)
+        dom_cov_routes = f(self.G, self.G.getTargets(), True)[0]
         dom_result0 = dom_cov_routes[self.v0.getVertexNumber()].toarray()
         dom_cov_route_0 = np.array(
             [[1, 1, 0],
@@ -1206,7 +1205,7 @@ class TestComputeValue6(unittest.TestCase):
         cv.compute_values(self.G, apxtype=10)
 
     def test_compute_values_dom_apx2(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=2)
+        compvalres = cv.compute_values(self.G, True, apxtype=1)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -1224,7 +1223,7 @@ class TestComputeValue6(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_dom_apx3(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=3)
+        compvalres = cv.compute_values(self.G, True, apxtype=2)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
@@ -1242,7 +1241,7 @@ class TestComputeValue6(unittest.TestCase):
         self.assertEqual(num_iter, res_num_iter, msg=ms)
 
     def test_compute_values_dom_apx4(self):
-        compvalres = cv.compute_values(self.G, True, apxtype=4)
+        compvalres = cv.compute_values(self.G, True, apxtype=3)
         game_val = compvalres[0]
         plac = compvalres[1]
         strat = compvalres[2]
