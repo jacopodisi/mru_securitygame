@@ -45,9 +45,9 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             # compute target to be covered
             others = np.delete(loc_res, i)
             if len(others) > 0:
-                tocov = np.all(short_set[others] == 0, axis=0)
+                tocov = np.all(short_set[others] == 0, axis=0, dtype=True)
             else:
-                tocov = np.full(short_set.shape[0], True)
+                tocov = np.full(short_set.shape[0], True, dtype=True)
             tocov[nontgts] = False
 
             # compute neighbors
@@ -133,7 +133,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             if (not isok or np.any(ifvisited)):
                 continue
             if placement_hist is None:
-                att_hist = np.zeros(short_set.shape[1], dtype=np.uint8)
+                att_hist = np.zeros(short_set.shape[1], dtype=bool)
                 placement_hist = np.array(p_res)
                 n_res = p_res.shape[1]
                 if maxnumres is not None and n_res >= maxnumres:
@@ -175,8 +175,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         log.debug("compute solution for different dispositions of " +
                   n_res_str + " resources")
 
-        res, isok = sc.set_cover_solver(short_set[:, tgts],
-                                        k=n_res)
+        res, isok = sc.set_cover_solver(short_set[:, tgts], k=n_res)
         n_res = res.shape[1]
         if maxnumres is not None and n_res >= maxnumres:
             return None, None

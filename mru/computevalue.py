@@ -16,6 +16,8 @@ from .srg import computecovsets as cs
 from .patrolling.correlated import correlated_row_gen as cr
 
 
+MTYPE = np.bool_
+
 log = logging.getLogger(__name__)
 
 
@@ -104,7 +106,8 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1, apxtype
         times_list[1] = time.clock() - st_time
     else:
         csr = covset
-
+    f_sol = reformat(solutionlist, improves)
+    return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
     # optimum resource game solution
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, improves)
@@ -198,7 +201,7 @@ def compute_shortest_sets(graph_game, targets):
     shortest_paths, pred = csgraph.shortest_path(
         matrix, directed=False, unweighted=True, return_predecessors=True)
 
-    shortest_matrix = np.zeros(shape=matrix.shape, dtype=bool)
+    shortest_matrix = np.zeros(shape=matrix.shape, dtype=MTYPE)
 
     for tgt, dl in deadlines.iteritems():
         covered = shortest_paths[:, tgt] <= dl
@@ -248,21 +251,21 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
             raise ValueError("No shortest path cost with apxtype specified")
         if apxtype is None:
             covset = cs.computeCovSet(graph_game, ver, targets)
-            covset_matrix = np.zeros((len(covset), n_vertices), dtype=bool)
+            covset_matrix = np.zeros((len(covset), n_vertices), dtype=MTYPE)
             for route in range(len(covset)):
                 covset_matrix[route, covset[route][0]] = 1
         elif apxtype in [2, 3, 4]:
             covset_matrix = apx.compute_apxcoveringsets(ver, sp, targets,
                                                         deadlines, apxtype)
         elif apxtype > 4 or apxtype == 1:
-            covset_matrix = np.empty((0, n_vertices), dtype=bool)
+            covset_matrix = np.empty((0, n_vertices), dtype=MTYPE)
             for _ in range(apxtype):
                 temp_covset = apx.compute_apxcoveringsets(ver, sp, targets,
                                                           deadlines, apxtype)
                 covset_matrix = np.vstack((covset_matrix, temp_covset))
         elif apxtype < 1:
             apxnum = - apxtype
-            covset_matrix = np.empty((0, n_vertices), dtype=bool)
+            covset_matrix = np.empty((0, n_vertices), dtype=MTYPE)
             for apxtp in range(apxnum + 4):
                 temp_covset = apx.compute_apxcoveringsets(ver, sp, targets,
                                                           deadlines, apxtp)
@@ -272,7 +275,7 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
             raise ValueError(m)
 
         if rm_dominated:
-            best = np.ones(covset_matrix.shape[0], dtype=bool)
+            best = np.full(covset_matrix.shape[0], True)
             for i, c in enumerate(covset_matrix):
                 if best[i]:
                     best[best] = np.logical_not(np.all(covset_matrix[best] <= c, axis=1))
