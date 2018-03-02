@@ -269,7 +269,7 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
 
         strm = time.clock()
         if rm_dominated:
-            best = np.full(covset_matrix.shape[0], True)
+            best = np.full(covset_matrix.shape[0], True, dtype=np.bool_)
             for i, c in enumerate(covset_matrix):
                 if best[i]:
                     best[best] = np.logical_not(np.all(covset_matrix[best] <= c, axis=1))
