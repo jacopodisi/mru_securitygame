@@ -161,7 +161,6 @@ def main():
                     fout.writelines(data[1:])
                 fcntl.flock(fin, fcntl.LOCK_UN)
             pooloptions = read_opt(str_options)[:-2]
-            print pooloptions
             # timeout
             if not pooloptions[4]:
                 pooloptions[4] = options[4]
@@ -174,7 +173,6 @@ def main():
             # apxtype
             if pooloptions[7] is None:
                 pooloptions[7] = options[7]
-            print pooloptions
             run(*(pooloptions + [logfile]))
 
 
