@@ -108,7 +108,6 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1, apxtype
         times_list[3] = sol[1]
     else:
         csr = covset
-
     # optimum resource game solution
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, improves)
@@ -224,7 +223,7 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
                   are eliminated
     apxtype: define which permutation is used during the computation of the apx_covering_sets,
              the approximation will be performed only if a type will be defined.
-             0  --> random order
+             0  --> decreasing distance from v0
              1  --> increasing distance from v0
              2  --> increasing deadline
              3  --> increasing order of excess time (dead(t) - dist(v0, t))
@@ -260,7 +259,7 @@ def compute_covering_routes(graph_game, targets, rm_dominated=False, sp=None, ap
                                                         deadlines, apxtype)
         elif apxtype > 3:
             covset_matrix = np.empty((0, n_vertices), dtype=MTYPE)
-            for apxtp in range(apxtype + 3):
+            for apxtp in range(apxtype + 4):
                 temp_covset = apx.compute_apxcoveringsets(ver, sp, targets,
                                                           deadlines, apxtp)
                 covset_matrix = np.vstack((covset_matrix, temp_covset))

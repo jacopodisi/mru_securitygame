@@ -27,7 +27,9 @@ def compute_apxcoveringsets(v0, sp, tgts, dead, type_permut):
     """
 
     def tgt_permutation():
-        if type_permut == 1:
+        if type_permut == 0:
+            temp_permut = np.argsort(-sp[v0])
+        elif type_permut == 1:
             temp_permut = np.argsort(sp[v0])
         elif type_permut == 2:
             temp_permut = np.argsort(dead)
