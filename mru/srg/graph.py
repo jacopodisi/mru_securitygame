@@ -13,6 +13,7 @@ I, know a place, where the 'graph' is really greener! [Katy Perry]
 import shortestpath as sp
 import numpy as np
 from scipy import sparse
+from scipy.sparse import csgraph
 
 inf = 999; #if an arc has this weight, it means that two nodes are not connected on G
 
@@ -89,11 +90,11 @@ class Vertex(object):
 #   make the object iterable in a loop (i.e. for loops)
     def __iter__(self):
         return self;
-        
+
 #==============================================================================
-# class Graph that defines a graph as a set of vertices and edges       
+# class Graph that defines a graph as a set of vertices and edges
 # it has the following attributes:
-#  vertices which is the complete list of vertices on G 
+#  vertices which is the complete list of vertices on G
 #==============================================================================
 class Graph(object):
     vertices = np.array([]);
@@ -114,7 +115,7 @@ class Graph(object):
         self.vertices = np.append(self.vertices,v);
         #give to each vertex a unique number
         v.setVertexNumber = len(self.vertices)-1;
-        
+
 #==============================================================================
 #     uses a binary vector to set the adjacents' vertices (can be used with the adjacency matrix)
 #     takes as input the vertex, and adj_vertices, a binary vector of size |V|
@@ -128,14 +129,14 @@ class Graph(object):
                 vertex.adjacents = np.append(vertex.adjacents, i);
             i+=1;
         vertex.adjacents.sort();
-        return vertex.adjacents; 
-        
+        return vertex.adjacents;
+
 #==============================================================================
 #     return the adjacency matrix
 #     it assign a value of 1 if two vertices are directly connected, inf otherwise
 #     every vertex shortest path to itself is considered to be 0 as weight
 #==============================================================================
-    def getAdjacencyMatrix(self): 
+    def getAdjacencyMatrix(self):
         n = len(self.getVertices());
         A = np.array([[inf for i in range(n)] for j in range(n)]);
         for i in self.getVertices():
@@ -147,7 +148,7 @@ class Graph(object):
                 else:
                     A[i.vertex_number][j] = inf;
         return A;
-        
+
 #   function that returns all the targets indices in G
     def getTargets(self):
         T = np.array([]);
@@ -155,9 +156,9 @@ class Graph(object):
             if v.is_target:
                 T = np.append(T,v.vertex_number);
         return T.astype(int);
-        
+
 #==============================================================================
-# function that returns the density of a given graps as average number of arcs per node   
+# function that returns the density of a given graps as average number of arcs per node
 #   the number of edges is drawn from a normal distribution with mean, said edge density and defined as epsilon = 2E/T*(T−1)
 #==============================================================================
     def getDensity(self):
@@ -169,19 +170,19 @@ class Graph(object):
                 if SP_cost[i,j]==1 and i!=j:
                     tot += 1;
         return (tot)/(n*(n-1));
-        
+
 #==============================================================================
 # function that set all the deadlines of the targets uniformely between min_deadline and max_deadline
-#         
+#
 #==============================================================================
     def setAllDeadlines(self, min_deadline, max_deadline):
         for v in self.getTargets():
             self.getVertex(v).setDeadline(np.random.randint(min_deadline, max_deadline));
-            
+
 #==============================================================================
 # function that generates a random adjacency (0,1) matrix with the following input
 #  n is the size of the matrix
-#  p in the probability that a node is connected to another one (we assume indepent the prob that i is connected to j, and i is connected to w different from j)    
+#  p in the probability that a node is connected to another one (we assume indepent the prob that i is connected to j, and i is connected to w different from j)
 # it returns
 #  the adjacency matrix M
 #  niter is the maximum number of iteration to find a connected graph (default 100)
@@ -212,14 +213,13 @@ def generateRandMatrix(n, p, niter=100, density=False):
                         M[x, y] = 1
                         M[y, x] = 1
                         break
-        connected = sparse.csgraph.connected_components(
-            M, directed=False, return_labels=False) == 1
+        connected = csgraph.connected_components(M, directed=False, return_labels=False) == 1
         if connected:
             return M;
     raise ValueError('Unable to create a connected graph.')
-    
+
 #==============================================================================
-# function that creates a graph that is composed by n vertices whose values is between (0,1] 
+# function that creates a graph that is composed by n vertices whose values is between (0,1]
 # and whose deadline is uniformely distributed between 1 and max_deadline
 # takes as input:
 #     the adjacency matrix M
@@ -244,14 +244,14 @@ def generateRandomGraph(M, n, p, min_deadline, max_deadline):
     G = Graph(vertices);
     for i in range(n):
         G.setAdjacents(vertices[i], M[i]);
-    return G;    
-    
-# function that returns the shortest path cost between two nodes        
+    return G;
+
+# function that returns the shortest path cost between two nodes
 def getShortestPath(G, i, j):
     n = np.size(G.getAdjacencyMatrix()[0]);
     SP, SP_cost = np.array(sp.shortest_path(G.getAdjacencyMatrix(),n,n));
-    return int(SP_cost.item(i,j));   
-    
+    return int(SP_cost.item(i,j));
+
 #==============================================================================
 # function that returns the diameter of a graph, as the longest of the shortest paths on G
 # takes as input
@@ -262,8 +262,8 @@ def getShortestPath(G, i, j):
 def getDiameter(G):
     n = np.size(G.getAdjacencyMatrix()[0]);
     SP, SP_cost = np.array(sp.shortest_path(G.getAdjacencyMatrix(),n,n));
-    return np.matrix.max(SP_cost).astype(int);   
-    
+    return np.matrix.max(SP_cost).astype(int);
+
 #==============================================================================
 # function that transforms a shortest path matrix into an adjacency matrix
 # takes as input
@@ -280,7 +280,7 @@ def fromSpToAdjacency(spmatrix):
             if spmatrix[i,j]==1 or spmatrix[i,j]==0:
                 adjacency[i][j]=1;
     return adjacency;
-    
+
 #==============================================================================
 # function that adds connections to a graph since its edge density reaches a value in the Neighbo(u)rhood of the input \epsilon
 # takes as input
@@ -295,8 +295,8 @@ def increaseEdgeDensity(adj, e):
     density = sum(sum(adj)); # total number of edges, also the autoedges are considered here
     density -= n; # remove autoedges
     density /= n*(n-1);
-    # 1.while density < e: 
-    # 2.take random vertex, add an edge, if possible 
+    # 1.while density < e:
+    # 2.take random vertex, add an edge, if possible
     # 3.goto 1
     while density<e:
          # pickup a vertex randomly
@@ -309,12 +309,12 @@ def increaseEdgeDensity(adj, e):
                 density /= n*(n-1);
                 break;
     return adj;
-    
+
 """
 Little testing to see if the algorithms work as expected
-"""               
+"""
 verbose = False; # this variable controls whether the output is printed
-if verbose: 
+if verbose:
     M = generateRandMatrix(15, 0.15); # generate a random adjacency matrix with n vertices, and a probability to be connected to each other vertex set to p
     G = generateRandomGraph(M, np.shape(M)[0], 0.2, 0, 0); # generate the graph with the adjacency matrix M
     #print("\n Targets on G are:");
@@ -324,33 +324,32 @@ if verbose:
         #obtain the shortest path matrix (through a classical sp algorithm)
     n = np.size(G.getAdjacencyMatrix()[0]);
     SP, SP_cost = np.array(sp.shortest_path(G.getAdjacencyMatrix(),n,n));
-    
+
     #print("\n Shortest path matrix:");
     #print(SP);
-    
+
     print("\n Shortest Path's cost Matrix:");
     print(SP_cost);
-    
-    print("Density of the graph is ", G.getDensity());    
-    
-    connected_adj = fromSpToAdjacency(sp.connectMatrix(SP_cost));    
+
+    print("Density of the graph is ", G.getDensity());
+
+    connected_adj = fromSpToAdjacency(sp.connectMatrix(SP_cost));
     print("Adjacency graph of the connected matrix is\n", connected_adj);
     for i in range(np.shape(connected_adj)[0]):
         G.getVertex(i).setAdjacents(connected_adj[i]);
-    
+
     increased_adj = increaseEdgeDensity(connected_adj, 0.35);
     print("Want to add a number of nodes s.t. the density is 0.35");
     print(increased_adj);
     for i in range(np.shape(increased_adj)[0]):
         G.getVertex(i).setAdjacents(increased_adj[i]);
-        
+
     diameter = np.matrix.max((sp.shortest_path(G.getAdjacencyMatrix(),n,n))[1]).astype(int); # calculate the diameter in order to set the min/max deadlines on G
-    G.setAllDeadlines(diameter, (2*diameter)+1);       
-       
+    G.setAllDeadlines(diameter, (2*diameter)+1);
+
     print("Now the density is ", G.getDensity());
     print("The new adjacency matrix is ", G.getAdjacencyMatrix());
-    
+
     SP, SP_cost = np.array(sp.shortest_path(G.getAdjacencyMatrix(),n,n));
     print(SP_cost);
-    
-    
+

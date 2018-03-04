@@ -23,11 +23,11 @@ from mru.patrolling.correlated import correlated_row_gen as cr
 
 def read_opt(str_opt):
     timeout = False
-    logfile = den = ntgts = dead = ix = poolname = apxtype = None
+    logfile = den = ntgts = dead = ix = poolname = apxtype = reldead = None
     enumtype = "1"
     enumit = "10"
     options, _ = getopt.getopt(str_opt,
-                               'd:t:D:i:l:p:n:e:a:T',
+                               'd:t:D:i:l:p:n:e:a:r:T',
                                ['density=',
                                 'ntarget=',
                                 'deadline=',
@@ -37,6 +37,7 @@ def read_opt(str_opt):
                                 'enumiter=',
                                 'enumtype=',
                                 'apxtype=',
+                                'reldead=',
                                 'timeout'])
 
     for opt, arg in options:
@@ -58,13 +59,16 @@ def read_opt(str_opt):
             enumtype = arg
         elif opt in ('-a', '--apxtype'):
             apxtype = arg
+        elif opt in ('-r', '--reldead'):
+            reldead = arg
         elif opt in ('-T', '--timeout'):
             timeout = True
 
-    return [den, ntgts, dead, ix, timeout, enumtype, enumit, apxtype, logfile, poolname]
+#           00    01     02     03     04     05      06        07      08       09        10
+    return [den, ntgts, dead, reldead, ix, timeout, enumtype, enumit, apxtype, logfile, poolname]
 
 
-def run(den, ntgts, dead, ix, timeout=False, enumtype=1,
+def run(den, ntgts, dead, reldead, ix, timeout=False, enumtype=1,
         enumit=10, apxtype=None, logfile='script.log'):
 
     if logfile is None:
@@ -79,10 +83,12 @@ def run(den, ntgts, dead, ix, timeout=False, enumtype=1,
 
     log = logging.getLogger(__name__)
 
-    graph = io.load_graph(ntgts, dead, den, ix)
+    graph = io.load_graph(ntgts, dead, den, ix, rel_dead=reldead)
 
     ntgts = str(ntgts)
     dead = str(dead)
+    if reldead is not None:
+        dead = str(reldead)
     den = str(den)
     ix = str(ix)
 
@@ -94,7 +100,7 @@ def run(den, ntgts, dead, ix, timeout=False, enumtype=1,
     covset = None
     if apxtype is None:
         for i in range(2):
-            oldres = io.load_results(ntgts, dead, den, ix, enumtype=(i + 1))
+            oldres = io.load_results(ntgts, dead, den, ix, enumtype=(i + 1), rel_dead=reldead)
             if oldres is not None:
                 covset = oldres[4]
                 log.debug('using covering set already computed')
@@ -116,7 +122,7 @@ def run(den, ntgts, dead, ix, timeout=False, enumtype=1,
                                    enumtype=enumtype,
                                    apxtype=apxtype)
 
-    io.save_results(ntgts, dead, den, ix, result, enumtype, apxtype)
+    io.save_results(ntgts, dead, den, ix, result, enumtype, apxtype, reldead)
 
     log.debug("END computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
@@ -131,8 +137,8 @@ def main():
     # write in pidprocesses.txt the pid of the process
     with open(path + "/pidprocesses.txt", "a") as fin:
         fcntl.flock(fin, fcntl.LOCK_EX)
-        if options[8] is not None:
-            pidstr = options[8] + ' pid: ' + str(os.getpid())
+        if options[9] is not None:
+            pidstr = options[9] + ' pid: ' + str(os.getpid())
         else:
             pidstr = 'pid: ' + str(os.getpid())
         fin.write(pidstr + '\n')
@@ -142,8 +148,7 @@ def main():
         # run the algorithm passing the option from terminal
         run(*options[:-1])
     else:
-        # run the algorithm pulling the GRAPHS option and timeout option
-        # from a pool file every other option is chose from terminal
+        # run the algorithm pulling the GRAPHS from a pool file
         poolname = options[-1] if options[-1] is not None else path +\
             '/pool.txt'
         logfile = options[-2]
@@ -161,18 +166,6 @@ def main():
                     fout.writelines(data[1:])
                 fcntl.flock(fin, fcntl.LOCK_UN)
             pooloptions = read_opt(str_options)[:-2]
-            # timeout
-            if not pooloptions[4]:
-                pooloptions[4] = options[4]
-            # enumtype
-            if pooloptions[5] == '1':
-                pooloptions[5] = options[5]
-            # enumit
-            if pooloptions[6] == '10':
-                pooloptions[6] = options[6]
-            # apxtype
-            if pooloptions[7] is None:
-                pooloptions[7] = options[7]
             run(*(pooloptions + [logfile]))
 
 

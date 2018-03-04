@@ -108,7 +108,7 @@ __pycache__/
 *.sublime-workspace
 
 # project specific
-file
+file/results*
 .envrc
 .idea
 .cache

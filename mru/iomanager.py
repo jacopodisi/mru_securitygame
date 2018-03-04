@@ -53,7 +53,7 @@ def load_file(filename):
     return res
 
 
-def save_graph(graph, den, dead):
+def save_graph(graph, den, dead, rel_dead=None):
     """save graph in file
     example -> ./file/
                   graphs/
@@ -71,30 +71,38 @@ def save_graph(graph, den, dead):
     size = tgts.shape[0]
     den = str("%.2f" % den)[2:]
 
+    dead = "_dead_" + str(dead)
+    if rel_dead is not None:
+        dead = "_reldead_" + str(rel_dead)
+
     dirname = "graphs/graphs_" + str(size) + "_ntgts/"
     if not os.path.exists(FILEDIR + dirname):
         os.makedirs(FILEDIR + dirname)
     filename = "instance_ntgts_" + str(size) + "_den_" + den\
-               + "_dead_" + str(dead)
+               + dead
     fn = save_file(graph, dirname + filename)
     log.debug('saved graph in ' + fn)
 
     return fn
 
 
-def load_graph(ntgts, dead, den, gix):
+def load_graph(ntgts, dead, den, gix, rel_dead=None):
 
     ntgts = str(ntgts)
-    dead = str(dead)
     den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
+
+    dead = "_dead_" + str(dead)
+    if rel_dead is not None:
+        dead = "_reldead_" + str(rel_dead)
+
     graph_path = "graphs/graphs_" + ntgts + "_ntgts/instance_ntgts_"\
-                 + ntgts + "_den_" + den + "_dead_" + dead + "_ix_" + gix
+                 + ntgts + "_den_" + den + dead + "_ix_" + gix
 
     return load_file(FILEDIR + graph_path + ".pickle")
 
 
-def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None):
+def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None, rel_dead=None):
     """save results in file
     example -> ./file/
                   results10(apx1)/
@@ -109,10 +117,13 @@ def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None):
     fn: complete file path ./file/....pickle
     """
     ntgts = str(ntgts)
-    dead = str(dead)
     den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
     enum = str(enumtype)
+
+    dead = "_dead_" + str(dead)
+    if rel_dead is not None:
+        dead = "_reldead_" + str(rel_dead)
 
     if apxtype is None:
         resdir = "results" + enum
@@ -124,15 +135,15 @@ def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None):
     if not os.path.exists(FILEDIR + dirname):
         os.makedirs(FILEDIR + dirname)
 
-    filename = "res_instance_ntgts_" + str(ntgts) + "_den_" + den + "_dead_"\
-               + str(dead) + "_graphix_" + str(gix)
+    filename = "res_instance_ntgts_" + str(ntgts) + "_den_" + den\
+               + dead + "_graphix_" + str(gix)
 
     fn = save_file(result, dirname + filename)
 
     log.debug('saved results in ' + fn)
 
     graph_path = "graphs/graphs_" + ntgts + "_ntgts/instance_ntgts_"\
-                 + ntgts + "_den_" + den + "_dead_" + dead + "_ix_" + gix
+                 + ntgts + "_den_" + den + dead + "_ix_" + gix
 
     if not os.path.isfile(FILEDIR + graph_path + ".pickle"):
         log.warn('wrong graph path specified for saving the result')
@@ -140,15 +151,18 @@ def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None):
     return fn
 
 
-def load_results(ntgts, dead, den, gix, enumtype="1", apxtype="", resix=0):
+def load_results(ntgts, dead, den, gix, enumtype="1", apxtype="", resix=0, rel_dead=None):
 
     ntgts = str(ntgts)
-    dead = str(dead)
     den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
     resix = str(resix)
     enum = str(enumtype)
     apxtype = str(apxtype)
+
+    dead = "_dead_" + str(dead)
+    if rel_dead is not None:
+        dead = "_reldead_" + str(rel_dead)
 
     if apxtype == "":
         resdir = "results" + enum
@@ -156,8 +170,8 @@ def load_results(ntgts, dead, den, gix, enumtype="1", apxtype="", resix=0):
         resdir = "results" + enum + "apxt" + apxtype
 
     res_path = resdir + "/res_graphs_" + ntgts\
-               + "_ntgts/res_instance_ntgts_" + ntgts + "_den_" + den\
-               + "_dead_" + dead + "_graphix_" + gix + "_ix_" + resix
+        + "_ntgts/res_instance_ntgts_" + ntgts + "_den_" + den\
+        + dead + "_graphix_" + gix + "_ix_" + resix
     try:
         result = load_file(FILEDIR + res_path + ".pickle")
     except IOError:
