@@ -100,11 +100,13 @@ def run(den, ntgts, dead, reldead, ix, timeout=False, enumtype=1,
     covset = None
     if apxtype is None:
         for i in range(2):
-            oldres = io.load_results(ntgts, dead, den, ix, enumtype=(i + 1), rel_dead=reldead)
-            if oldres is not None:
-                covset = oldres[4]
-                log.debug('using covering set already computed')
-                break
+            try:
+                oldres = io.load_results(ntgts, dead, den, ix, enumtype=(i + 1), rel_dead=reldead)
+            except IOError:
+                continue
+            covset = oldres[4]
+            log.debug('Using covering set already computed')
+            break
 
     if timeout:
         with cr.time_limit(36000):
