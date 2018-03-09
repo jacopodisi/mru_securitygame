@@ -47,7 +47,7 @@ def reformat(solutionlist, improveslist):
     return game_values, placements, strategies, impro
 
 
-def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1, apxtype=None):
+def compute_values(graph, rm_dom=False, enum=1, covset=None, times=None, enumtype=1, apxtype=None):
     """ Compute the values of the graph for every number of resources
         (from the minimum to the optimum)
     Parameters
@@ -78,7 +78,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1, apxtype
                                                            )
     csr: covering sets of every node
     iter_sol: dictionary of type {"num_resources":
-                                  num_solution_iterated, ...}
+                                  improvments, ...}
     """
     enum = int(enum)
     enumtype = int(enumtype)
@@ -108,6 +108,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1, apxtype
         times_list[3] = sol[1]
     else:
         csr = covset
+        times_list[1] = times[1]
     # optimum resource game solution
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, improves)
@@ -165,6 +166,8 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, enumtype=1, apxtype
             return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
 
     times_list[6] = time.clock() - start_time
+    if covset is not None:
+        times_list[6] += times[1]
 
     # change solution format in a more readable ones
     f_sol = reformat(solutionlist, improves)
