@@ -102,7 +102,7 @@ def load_graph(ntgts, dead, den, gix, rel_dead=None):
     return load_file(FILEDIR + graph_path + ".pickle")
 
 
-def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None, rel_dead=None):
+def save_results(ntgts, dead, den, gix, result, enumtype="1", enumit='10', apxtype=None, rel_dead=None):
     """save results in file
     example -> ./file/
                   results10(apx1)/
@@ -119,16 +119,16 @@ def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None, rel_d
     ntgts = str(ntgts)
     den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
-    enum = str(enumtype)
+    enumtp = str(enumtype)
+    enumit = str(enumit)
 
     dead = "_dead_" + str(dead)
     if rel_dead is not None:
         dead = "_reldead_" + str(rel_dead)
 
-    if apxtype is None:
-        resdir = "results" + enum
-    else:
-        resdir = "results" + enum + "apxt" + str(apxtype)
+    resdir = "results_et_" + enumtp + "_ei_" + enumit
+    if apxtype is not None:
+        resdir += "_apxt_" + str(apxtype)
 
     dirname = resdir + "/res_graphs_" + str(ntgts) + "_ntgts/"
 
@@ -151,23 +151,22 @@ def save_results(ntgts, dead, den, gix, result, enumtype="", apxtype=None, rel_d
     return fn
 
 
-def load_results(ntgts, dead, den, gix, enumtype="1", apxtype="", resix=0, rel_dead=None):
+def load_results(ntgts, dead, den, gix, enumtype="1", enumit='10', apxtype=None, resix=0, rel_dead=None):
 
     ntgts = str(ntgts)
     den = str("%.2f" % (int(den) / 100.0))[2:]
     gix = str(gix)
     resix = str(resix)
-    enum = str(enumtype)
-    apxtype = str(apxtype)
+    enumtp = str(enumtype)
+    enumit = str(enumit)
 
     dead = "_dead_" + str(dead)
     if rel_dead is not None:
         dead = "_reldead_" + str(rel_dead)
 
-    if apxtype == "":
-        resdir = "results" + enum
-    else:
-        resdir = "results" + enum + "apxt" + apxtype
+    resdir = "results_et_" + enumtp + "_ei_" + enumit
+    if apxtype is not None:
+        resdir += "_apxt_" + str(apxtype)
 
     res_path = resdir + "/res_graphs_" + ntgts\
         + "_ntgts/res_instance_ntgts_" + ntgts + "_den_" + den\
