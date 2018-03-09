@@ -114,6 +114,7 @@ file/results*
 .cache
 pidprocesses.txt
 *.log
+*aggregates.pickle
 
 # Mac
 .DS_Store
