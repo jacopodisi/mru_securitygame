@@ -98,13 +98,15 @@ def run(den, ntgts, dead, reldead, ix, timeout=False, enumtype=1,
               str(enumtype) + " enumit=" + str(enumit) + " apx=" + str(apxtype))
 
     covset = None
+    oldtimes = None
     if apxtype is None:
-        for i in range(2):
+        for i in range(5):
             try:
                 oldres = io.load_results(ntgts, dead, den, ix, enumtype=(i + 1), rel_dead=reldead)
             except IOError:
                 continue
             covset = oldres[4]
+            oldtimes = oldres[3]
             log.debug('Using covering set already computed')
             break
 
@@ -114,6 +116,7 @@ def run(den, ntgts, dead, reldead, ix, timeout=False, enumtype=1,
                                        rm_dom=True,
                                        enum=enumit,
                                        covset=covset,
+                                       times=oldtimes,
                                        enumtype=enumtype,
                                        apxtype=apxtype)
     else:
@@ -121,10 +124,11 @@ def run(den, ntgts, dead, reldead, ix, timeout=False, enumtype=1,
                                    rm_dom=True,
                                    enum=enumit,
                                    covset=covset,
+                                   times=oldtimes,
                                    enumtype=enumtype,
                                    apxtype=apxtype)
 
-    io.save_results(ntgts, dead, den, ix, result, enumtype, apxtype, reldead)
+    io.save_results(ntgts, dead, den, ix, result, enumtype=enumtype, enumit=enumit, apxtype=apxtype, rel_dead=reldead)
 
     log.debug("END computation for graph " + ntgts + " " + dead +
               " 0." + den + " " + ix)
