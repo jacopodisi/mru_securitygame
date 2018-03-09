@@ -2,6 +2,7 @@
 
 import gurobipy as gu
 import numpy as np
+import pdb
 
 
 VMAT = np.uint16
@@ -30,7 +31,7 @@ def set_cover_solver(sets, k=None, nsol=1, place=None, sets_hist=None):
 
         m = gu.Model("setcover")
         m.setParam(gu.GRB.Param.OutputFlag, 0)
-        # find solutions that are not the best
+        # find solutions that are the best
         m.setParam(gu.GRB.Param.PoolSearchMode, 2)
         # Limit how many solutions to collect
         m.setParam(gu.GRB.Param.PoolSolutions, nsol)
@@ -80,7 +81,7 @@ def set_cover_solver(sets, k=None, nsol=1, place=None, sets_hist=None):
         m.optimize()
 
         try:
-            obj = int(m.ObjVal)
+            obj = int(round(m.ObjVal))
         except AttributeError:
             raise gu.GurobiError("GurobiError", 3)
 
@@ -93,7 +94,7 @@ def set_cover_solver(sets, k=None, nsol=1, place=None, sets_hist=None):
             m.setParam(gu.GRB.Param.SolutionNumber, e)
             i = 0
             for iset, v in enumerate(m.getVars()):
-                if int(v.Xn):
+                if int(round(v.x)):
                     solutions[e, i] = iset
                     i += 1
 
