@@ -110,9 +110,14 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, times=None, enumtyp
         csr = covset
         times_list[1] = times[1]
     # optimum resource game solution
+
+    retcsr = None
+    if apxtype is None:
+        retcsr = csr
+
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, improves)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
+        return f_sol[0], f_sol[1], f_sol[2], times_list, retcsr, f_sol[3]
     log.debug("compute solution with maximum resources")
     st_time = time.clock()
     max_res_strategy = sc.maximum_resources(csr, tgts)
@@ -125,7 +130,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, times=None, enumtyp
 
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, improves)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
+        return f_sol[0], f_sol[1], f_sol[2], times_list, retcsr, f_sol[3]
 
     enumfunc = pe.enumfunction(enumtype=enumtype, covset=csr,
                                node_values=node_values,
@@ -151,7 +156,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, times=None, enumtyp
 
     if signal_receiver.kill_now:
         f_sol = reformat(solutionlist, improves)
-        return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
+        return f_sol[0], f_sol[1], f_sol[2], times_list, retcsr, f_sol[3]
 
     # what happen between
     times_list[5] = []
@@ -163,7 +168,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, times=None, enumtyp
 
         if signal_receiver.kill_now:
             f_sol = reformat(solutionlist, improves)
-            return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
+            return f_sol[0], f_sol[1], f_sol[2], times_list, retcsr, f_sol[3]
 
     times_list[6] = time.clock() - start_time
     if covset is not None:
@@ -171,7 +176,7 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, times=None, enumtyp
 
     # change solution format in a more readable ones
     f_sol = reformat(solutionlist, improves)
-    return f_sol[0], f_sol[1], f_sol[2], times_list, csr, f_sol[3]
+    return f_sol[0], f_sol[1], f_sol[2], times_list, retcsr, f_sol[3]
 
 
 def compute_shortest_sets(graph_game, targets):
