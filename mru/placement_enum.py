@@ -47,7 +47,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
             if len(others) > 0:
                 tocov = np.all(short_set[others] == 0, axis=0)
             else:
-                tocov = np.full(short_set.shape[0], True)
+                tocov = np.full(short_set.shape[0], True, dtype=np.bool_)
             tocov[nontgts] = False
 
             # compute neighbors
@@ -207,7 +207,7 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
                         tocov = np.all(short_set[others] == 0,
                                        axis=0)
                     else:
-                        tocov = np.full(node_values.shape[0], True)
+                        tocov = np.full(node_values.shape[0], True, dtype=np.bool_)
                     tocov[notgts] = False
                     temp_neigh = np.all(short_set[:, tocov] >= 1, axis=1)
                     temp_neigh[bestsol[2]] = False
