@@ -129,15 +129,14 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
 
             p_res, isok = sc.set_cover_solver(short_set[:, tgts],
                                               k=n_res, place=p)
-            ifvisited = np.all(placement_hist == p_res, axis=1)
-            if (not isok or np.any(ifvisited)):
-                continue
             if placement_hist is None:
                 att_hist = np.zeros(short_set.shape[1], dtype=bool)
                 placement_hist = np.array(p_res)
                 n_res = p_res.shape[1]
                 if maxnumres is not None and n_res >= maxnumres:
                     return None, None
+            elif not isok or np.any(np.all(placement_hist == p_res, axis=1)):
+                continue
             else:
                 placement_hist = np.vstack((placement_hist, p_res))
 
