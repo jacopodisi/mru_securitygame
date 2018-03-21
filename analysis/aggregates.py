@@ -3,6 +3,42 @@ import pandas as pd
 from fnmatch import fnmatch
 import pickle
 
+
+def comp_err(data):
+    data['err'] = 0
+    for _, r in data[(data.apxt == 'opt') & (data.et == 'gurobi')].iterrows():
+        for i, d in data[(data.apxt.notnull()) &
+                         (data.dead == r.dead) &
+                         (data.den == r.den) &
+                         (data.ntgts == r.ntgts) &
+                         (data.graphix == r.graphix) &
+                         (data.et == 'gurobi')].iterrows():
+            err = 0
+            for n, v in d.gameval.iteritems():
+                if n in r.gameval.keys():
+                    err += r.gameval.loc[n] - v
+                else:
+                    err += 1 - v
+            err /= len(d.gameval)
+            data.loc[i, 'err'] = err
+
+    for _, r in data[(data.dead.isnull().values) & (data.apxt == 'apx(30)') & (data.et == 'gurobi')].iterrows():
+        for i, d in data[(data.apxt != 'apx(30)') &
+                         (data.reldead == r.reldead) &
+                         (data.den == r.den) &
+                         (data.ntgts == r.ntgts) &
+                         (data.graphix == r.graphix) &
+                         (data.et == 'gurobi')].iterrows():
+            err = 0
+            for n, v in d.gameval.iteritems():
+                if n in r.gameval.keys():
+                    err += r.gameval.loc[n] - v
+                else:
+                    err += 1 - v
+            err /= len(d.gameval)
+            data.loc[i, 'err'] = err
+
+
 root = '../file'
 pattern = "res_instance_ntgts*"
 
@@ -41,4 +77,12 @@ for path, subdirs, files in os.walk(root):
             tempdata['optres'] = max(res[0].keys())
             data.append(tempdata)
 dataMatrix = pd.DataFrame(data)
+dataMatrix['time_tot_no_cov'] = dataMatrix['time_tot'] - dataMatrix['time_cov']
+dataMatrix['apxt'].replace([0, 1, 2, 3, 10, 20, 30],
+                           ['apx(-spc)', 'apx(spc)',
+                            'apx(dead)', 'apx(dead-spc)',
+                            'apx(10)', 'apx(20)', 'apx(30)'], inplace=True)
+dataMatrix['apxt'].fillna('opt', inplace=True)
+dataMatrix['et'].replace([1, 4, 5], ['gurobi', 'ls1', 'ls2'], inplace=True)
+comp_err(dataMatrix)
 dataMatrix.to_pickle('data_aggregates.pickle', protocol=2)
