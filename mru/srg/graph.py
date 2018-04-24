@@ -187,6 +187,7 @@ class Graph(object):
 #  the adjacency matrix M
 #  niter is the maximum number of iteration to find a connected graph (default 100)
 #  density if True tell that the variable p, instead of indicating the probability, indicate the number of edges (as a density)
+#  if the density specified is less than the minimum number (to have e complete graph), the density is been set to (2/n)
 #==============================================================================
 def generateRandMatrix(n, p, niter=100, density=False):
     assert p > 0
@@ -203,8 +204,8 @@ def generateRandMatrix(n, p, niter=100, density=False):
                 l += 1;
         else:
             tot_edges = (n * n - n)/2
-            if (tot_edges * p) < (n - 1):
-                raise ValueError('Impossible to create a connected graph, too few edges')
+            if p < 2.0 / n:
+                p = 2.0 / n
             for i in range(int(tot_edges * p)):
                 while True:
                     x = np.random.randint(n)
