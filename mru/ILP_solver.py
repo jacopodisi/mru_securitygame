@@ -94,7 +94,7 @@ def set_cover_solver(sets, k=None, nsol=1, place=None, sets_hist=None):
             m.setParam(gu.GRB.Param.SolutionNumber, e)
             i = 0
             for iset, v in enumerate(m.getVars()):
-                if int(round(v.x)):
+                if int(round(v.Xn)):
                     solutions[e, i] = iset
                     i += 1
 
