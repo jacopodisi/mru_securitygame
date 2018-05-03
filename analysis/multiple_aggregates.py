@@ -36,6 +36,8 @@ def init_df():
                 tempdata.update(timedict)
                 if 3 in res[3]:
                     tempdata['time_dom'] = res[3][3]
+                else:
+                    tempdata['time_dom'] = 0
 
                 tempdata['time_tot'] = res[3][6]
                 tempdata['optres'] = max(res[0].keys())
@@ -48,7 +50,9 @@ def init_df():
                                 'apx(dead)', 'apx(dead-spc)',
                                 'apx(10)', 'apx(20)', 'apx(30)'], inplace=True)
     dataMatrix['apxt'].fillna('opt', inplace=True)
-    dataMatrix['et'].replace([1, 4, 5], ['gurobi', 'ls1', 'ls2'], inplace=True)
+    dataMatrix['et'].replace([1, 2, 3, 4, 5],
+                             ['gurobi', 'do1', 'do2', 'ls1', 'ls2'],
+                             inplace=True)
     dataMatrix['den'].replace([8], [6], inplace=True)
     resources = np.sort(
         [x for x in dataMatrix.columns if 'utility_' in x])
@@ -71,8 +75,8 @@ def aggregate_times(data):
 
 def aggregate_utilities(data):
     util_col = [x for x in data.columns if 'utility' in x]
-    data.loc[:, ['ntgts', 'den', 'dead', 'apxt', 'et', 'graphix']
-            + util_col].to_pickle(folder + 'exp_game_values.pickle')
+    data.loc[:, ['ntgts', 'den', 'dead', 'apxt', 'et', 'graphix'] +
+             util_col].to_pickle(folder + 'exp_game_values.pickle')
     print('saved utilities in exp_game_values.pickle')
 
 
@@ -83,14 +87,13 @@ def aggregate_mean_utils(data):
     temp = data.loc[:, gameval_list]
 
     grouped = temp.groupby(['ntgts', 'den', 'dead', 'apxt', 'et'],
-                        as_index=False).mean()
+                           as_index=False).mean()
     grouped.to_pickle(folder + 'exp_mean_values.pickle')
     print('saved mean utilities in exp_mean_values.pickle')
 
 
 def aggregate_perc_times(data):
     temp = data.copy()
-    temp['time_dom'].fillna(0, inplace=True)
     temp['time_cov'] += temp['time_dom']
     del(temp['time_dom'])
 
@@ -103,7 +106,7 @@ def aggregate_perc_times(data):
     time_sum = temp.loc[:, time_list].sum(axis=1)
     for cn in time_list:
         temp[cn] /= time_sum
-    row.dropna(axis=1, inplace=True)
+    temp.dropna(axis=1, inplace=True)
     temp.to_pickle(folder + 'exp_perc_times.pickle')
     print('saved percentage times in exp_perc_times.pickle')
 
@@ -174,18 +177,31 @@ def aggregate_ratios_enum(data):
 def aggregate_opt_resources(data):
     optres = data.loc[:, ['ntgts', 'den', 'dead', 'apxt', 'et', 'optres']]
     mean_optres = optres.groupby(['ntgts', 'den', 'dead', 'apxt', 'et'],
-                               as_index=False).mean()
+                                 as_index=False).mean()
     mean_optres.to_pickle(folder + 'exp_opt_resources_mean.pickle')
     print('saved mean optimum resources in exp_opt_resources_mean.pickle')
 
 
 def aggregate_opt_resources_time(data):
-    times = data.loc[:, ['ntgts', 'den', 'dead', 'apxt', 'et', 'time_max']]
-    mean_times = times.groupby(['ntgts', 'den', 'dead', 'apxt', 'et'],
+    times = data.loc[:, ['ntgts', 'den', 'dead', 'apxt', 'time_max']]
+    mean_times = times.groupby(['ntgts', 'den', 'dead', 'apxt'],
                                as_index=False).mean()
     mean_times.to_pickle(folder + 'exp_opt_resources_times_mean.pickle')
     print('saved mean compute time of optimum resources in'
           'exp_opt_resources_times_mean.pickle')
+
+
+def aggregate_opt_resources_cov_time(data):
+    times = data.loc[:, ['ntgts', 'den', 'dead', 'apxt',
+                         'time_short', 'time_cov', 'time_dom', 'time_max']]
+    times['time_max'] = times['time_short'] + times['time_cov'] +\
+        times['time_dom'] + times['time_max']
+    times = times[['ntgts', 'den', 'dead', 'apxt', 'time_max']]
+    mean_times = times.groupby(['ntgts', 'den', 'dead', 'apxt'],
+                               as_index=False).mean()
+    mean_times.to_pickle(folder + 'exp_opt_resources_cov_times_mean.pickle')
+    print('saved mean compute time of optimum resources in'
+          'exp_opt_resources_cov_times_mean.pickle')
 
 
 if __name__ == '__main__':
@@ -193,6 +209,7 @@ if __name__ == '__main__':
     aggregate_times(data)
     aggregate_opt_resources(data)
     aggregate_opt_resources_time(data)
+    aggregate_opt_resources_cov_time(data)
     aggregate_utilities(data)
     aggregate_mean_utils(data)
     aggregate_perc_times(data)
