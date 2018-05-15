@@ -30,9 +30,9 @@ def init_df():
                 tempdata['time_max'] = res[3][2]
                 mink = min(res[0].keys())
                 timedict = {}
-                timedict['time_res_' + str(mink)] = res[3][4]
+                timedict['time_res_{:02d}'.format(mink)] = res[3][4]
                 for i, v in enumerate(res[3][5]):
-                    timedict['time_res_' + str(mink + 1 + i)] = v
+                    timedict['time_res_{:02d}'.format(mink + 1 + i)] = v
                 tempdata.update(timedict)
                 if 3 in res[3]:
                     tempdata['time_dom'] = res[3][3]
@@ -100,13 +100,18 @@ def aggregate_perc_times(data):
     time_list = ['time_short', 'time_cov'] +\
                 [x for x in temp.columns if 'time_res' in x] +\
                 ['time_max']
+    time_list_res = [x for x in temp.columns if 'time_res' in x]
     temp = temp.loc[:, time_list +
                     ['ntgts', 'den', 'dead', 'apxt',
                      'et', 'graphix']]
     time_sum = temp.loc[:, time_list].sum(axis=1)
     for cn in time_list:
         temp[cn] /= time_sum
-    temp.dropna(axis=1, inplace=True)
+    temp['time_res'] = temp[time_list_res].sum(axis=1)
+    temp = temp[['time_short', 'time_cov', 'time_res', 'time_max'] +
+                ['ntgts', 'den', 'dead', 'apxt', 'et']]
+    temp = temp.groupby(['ntgts', 'den', 'dead', 'apxt', 'et'],
+                        as_index=False).mean()
     temp.to_pickle(folder + 'exp_perc_times.pickle')
     print('saved percentage times in exp_perc_times.pickle')
 
