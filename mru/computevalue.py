@@ -78,7 +78,10 @@ def compute_values(graph, rm_dom=False, enum=1, covset=None, times=None, enumtyp
                                                            )
     csr: covering sets of every node
     iter_sol: dictionary of type {"num_resources":
-                                  improvments, ...}
+                                  improvements, ...}
+              improvements is a list of (expected utlity, defender's strategy,
+              resource placement) tuples, one for each placement analysed.
+
     """
     enum = int(enum)
     enumtype = int(enumtype)

@@ -29,6 +29,11 @@ def plot_mean_values(data, den, dead, ntgts, et, apxt,
         row = row.loc[:, used_cols]
         row.rename(index=str, columns={x: int(
             x.split('_')[-1]) for x in used_cols}, inplace=True)
+
+        if label == 'do':
+            label = 'double oracle'
+        elif label == 'ls':
+            label = 'local search'
         plt.plot(row.transpose(), marker=mark, linestyle=line, label=label)
 
 
@@ -39,12 +44,12 @@ def plot_mean_values_enum(data, den, dead, ntgts, apxt,
     plt.figure()
     mark = cycle(markerstyles)
     line = cycle(linestyles)
-    for et in ['gurobi', 'do1', 'do2', 'ls1', 'ls2']:
+    for et in ['gurobi', 'do', 'ls']:
         plot_mean_values(data, den, dead, ntgts, et,
                          apxt, next(mark), next(line), et)
     plt.legend()
     plt.xlabel('Number of Resources')
-    plt.ylabel('Game Value')
+    plt.ylabel('Maximum Expected Utility')
     plt.show()
 
     if save:
@@ -61,13 +66,12 @@ def plot_mean_values_apxt(data, den, dead, ntgts, et,
     plt.figure()
     mark = cycle(markerstyles)
     line = cycle(linestyles)
-    for apx in ['opt', 'apx(-spc)', 'apx(spc)', 'apx(dead)',
-                'apx(dead-spc)', 'apx(10)', 'apx(20)', 'apx(30)']:
+    for apx in ['exact', '10 orders', '20 orders', '30 orders']:
         plot_mean_values(data, den, dead, ntgts, et,
                          apx, next(mark), next(line), apx)
     plt.legend()
     plt.xlabel('Number of Resources')
-    plt.ylabel('Game Value')
+    plt.ylabel('Maximum Expected Utility')
     plt.show()
 
     if save:
@@ -90,16 +94,22 @@ if __name__ == '__main__':
 
     # linestyles = ['-','--','-.',':']
     # markerstyles = ['.', 'o', '*', 'v', 'x', 'd', '+', 's']
-    linestyles = ['-', '--', '-.', ':']
-    markerstyles = ['.']
+    linestyles = ['-']
+    markerstyles = ['.', 'o', '*', 'v', 'x', 'd', '+', 's']
 
     plot_mean_values_apxt(data, 6, 5, 50, 'gurobi',
                           markerstyles, linestyles, save)
-    plot_mean_values_apxt(data, 6, 5, 40, 'gurobi',
+    plot_mean_values_apxt(data, 6, 5, 25, 'gurobi',
                           markerstyles, linestyles, save)
-    plot_mean_values_enum(data, 6, 5, 50, 'opt',
+    plot_mean_values_apxt(data, 6, 1.5, 50, 'gurobi',
                           markerstyles, linestyles, save)
-    plot_mean_values_enum(data, 6, 1.5, 50, 'apx(30)',
+    plot_mean_values_apxt(data, 6, 1.5, 25, 'gurobi',
                           markerstyles, linestyles, save)
-    plot_mean_values_enum(data, 6, 1.5, 40, 'apx(30)',
+    plot_mean_values_enum(data, 6, 5, 25, 'exact',
+                          markerstyles, linestyles, save)
+    plot_mean_values_enum(data, 6, 5, 50, 'exact',
+                          markerstyles, linestyles, save)
+    plot_mean_values_enum(data, 6, 1.5, 50, '30 orders',
+                          markerstyles, linestyles, save)
+    plot_mean_values_enum(data, 6, 1.5, 40, '30 orders',
                           markerstyles, linestyles, save)

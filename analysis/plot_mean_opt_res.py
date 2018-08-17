@@ -15,13 +15,12 @@ def plot_mean_opt_apxt(data, den, dead, markerstyles, linestyles, save=False):
     plt.figure()
     mark = cycle(markerstyles)
     line = cycle(linestyles)
-    for apx in ['opt', 'apx(-spc)', 'apx(spc)', 'apx(dead)',
-                'apx(dead-spc)', 'apx(10)', 'apx(20)', 'apx(30)']:
+    for apx in ['exact', '10 orders', '20 orders', '30 orders']:
         plot_mean_opt(data, den, dead, 'gurobi', apx,
                       next(mark), next(line), apx)
     plt.legend()
-    plt.xlabel('Number Nodes')
-    plt.ylabel('Optimum Resoures')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Maximum Resoures')
     plt.show()
 
     if save:
@@ -38,7 +37,7 @@ def plot_mean_optres(data, den, dead, apxt, markerstyles,
     line = cycle(linestyles)
     plot_mean_opt(data, den, dead, 'gurobi', apxt,
                   next(mark), next(line))
-    plt.xlabel('Number Nodes')
+    plt.xlabel('Number of Nodes')
     plt.ylabel('Optimum Resoures')
     plt.show()
 
@@ -62,7 +61,8 @@ if __name__ == '__main__':
     linestyles = ['-', '--', '-.', ':']
     markerstyles = ['.']
 
-    plot_mean_opt_apxt(data, 6, 5, markerstyles, linestyles, save)
-    plot_mean_opt_apxt(data, 6, 10, markerstyles, linestyles, save)
+    # plot_mean_opt_apxt(data, 6, 5, markerstyles, linestyles, save)
+    # plot_mean_opt_apxt(data, 6, 10, markerstyles, linestyles, save)
 
-    plot_mean_optres(data, 6, 5, 'opt', markerstyles, linestyles, save)
+    plot_mean_optres(data, 6, 5, 'exact', markerstyles, linestyles, save)
+    plot_mean_opt_apxt(data, 6, 5, markerstyles, linestyles, save)

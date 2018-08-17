@@ -159,7 +159,6 @@ def enumfunction(enumtype=None, covset=None, maxnumres=None,
         """ Compute correlated solution for defender with multi resources,
         enumerating through different placements using the double oracle.
         """
-
         improves = []
         placements = collections.deque([None])
         placement_hist = None

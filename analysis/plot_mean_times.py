@@ -20,7 +20,7 @@ def plot_mean_times_enum(data, den, dead,
         apxt = 'apx(30)'
     else:
         apxt = 'opt'
-    for et in ['gurobi', 'do1', 'do2', 'ls1', 'ls2']:
+    for et in ['gurobi', 'do', 'ls']:
         plot_mean_times(data, den, dead, et, apxt, next(mark), next(line), et)
     plt.legend()
     plt.grid(True, axis='y', which='minor')
